@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { ohlcvResolver } from './features/chart/resolvers/ohlcv.resolve';
 
 export const routes: Routes = [
   {
@@ -22,6 +23,7 @@ export const routes: Routes = [
     path: 'chart/:symbol',
     loadComponent: () =>
       import('./features/chart/chart').then(m => m.Chart),
+    resolve: { ohlcv: ohlcvResolver },
     title: 'Assetly — Chart',
   },
   {

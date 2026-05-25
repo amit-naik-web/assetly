@@ -1,0 +1,219 @@
+<!-- Search and export bar -->
+<div class="toolbar" role="search">
+    <label for="holdings-search" class="sr-only">
+      Search holdings by symbol, company or sector
+    </label>
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        id="holdings-search"
+        type="search"
+        class="search-input"
+        placeholder="Search symbol, company or sector…"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+        [attr.aria-controls]="'holdings-table'"
+        aria-label="Search holdings"
+      />
+    </div>
+  
+    <div
+      class="stats-chips"
+      role="status"
+      [attr.aria-label]="
+        'Showing ' + stats().showing + ' of ' + stats().total + ' positions. ' +
+        stats().gainers + ' gaining, ' + stats().losers + ' losing.'
+      "
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span class="chip">{{ stats().showing }} of {{ stats().total }}</span>
+      <span class="chip gain-chip">▲ {{ stats().gainers }}</span>
+      <span class="chip loss-chip">▼ {{ stats().losers }}</span>
+    </div>
+  </div>
+  
+  <!-- Virtual scroll table wrapper -->
+  <div class="table-wrap">
+    <table
+      id="holdings-table"
+      class="holdings-tbl"
+      [attr.aria-rowcount]="stats().showing"
+      aria-label="Portfolio holdings"
+    >
+      <caption class="sr-only">
+        Portfolio holdings —
+        {{ stats().showing }} positions shown,
+        sorted by {{ sortColumn() ?? 'default order' }}.
+      </caption>
+  
+      <thead>
+        <tr>
+          <!-- Symbol -->
+          <th scope="col" class="col-sym"
+              [attr.aria-sort]="getAriaSortValue('symbol')">
+            <button class="sort-btn"
+                    (click)="sort('symbol')"
+                    [attr.aria-label]="getSortAriaLabel('symbol', 'Symbol')">
+              Symbol
+              <span class="sort-icon" aria-hidden="true">
+                @if (sortColumn() === 'symbol' && sortDir() === 'asc')  { ↑ }
+                @if (sortColumn() === 'symbol' && sortDir() === 'desc') { ↓ }
+                @if (sortColumn() !== 'symbol' || sortDir() === 'none') { ↕ }
+              </span>
+            </button>
+          </th>
+  
+          <!-- Company -->
+          <th scope="col" class="col-name"
+              [attr.aria-sort]="getAriaSortValue('companyName')">
+            <button class="sort-btn"
+                    (click)="sort('companyName')"
+                    [attr.aria-label]="getSortAriaLabel('companyName', 'Company')">
+              Company
+              <span class="sort-icon" aria-hidden="true">
+                @if (sortColumn() === 'companyName' && sortDir() === 'asc')  { ↑ }
+                @if (sortColumn() === 'companyName' && sortDir() === 'desc') { ↓ }
+                @if (sortColumn() !== 'companyName' || sortDir() === 'none') { ↕ }
+              </span>
+            </button>
+          </th>
+  
+          <!-- Sector -->
+          <th scope="col" class="col-sector"
+              [attr.aria-sort]="getAriaSortValue('sector')">
+            <button class="sort-btn"
+                    (click)="sort('sector')"
+                    [attr.aria-label]="getSortAriaLabel('sector', 'Sector')">
+              Sector
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+          <!-- Shares -->
+          <th scope="col" class="col-num r"
+              [attr.aria-sort]="getAriaSortValue('shares')">
+            <button class="sort-btn r"
+                    (click)="sort('shares')"
+                    [attr.aria-label]="getSortAriaLabel('shares', 'Shares')">
+              Shares
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+          <!-- Avg Cost -->
+          <th scope="col" class="col-num r"
+              [attr.aria-sort]="getAriaSortValue('avgCost')">
+            <button class="sort-btn r"
+                    (click)="sort('avgCost')"
+                    [attr.aria-label]="getSortAriaLabel('avgCost', 'Average cost')">
+              Avg cost
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+          <!-- Price -->
+          <th scope="col" class="col-num r"
+              [attr.aria-sort]="getAriaSortValue('currentPrice')">
+            <button class="sort-btn r"
+                    (click)="sort('currentPrice')"
+                    [attr.aria-label]="getSortAriaLabel('currentPrice', 'Current price')">
+              Price
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+          <!-- Day change -->
+          <th scope="col" class="col-num r"
+              [attr.aria-sort]="getAriaSortValue('dayChangePct')">
+            <button class="sort-btn r"
+                    (click)="sort('dayChangePct')"
+                    [attr.aria-label]="getSortAriaLabel('dayChangePct', 'Day change percent')">
+              Day chg
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+          <!-- Total gain -->
+          <th scope="col" class="col-num r"
+              [attr.aria-sort]="getAriaSortValue('totalGain')">
+            <button class="sort-btn r"
+                    (click)="sort('totalGain')"
+                    [attr.aria-label]="getSortAriaLabel('totalGain', 'Total gain or loss')">
+              Gain/loss
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+          <!-- Total value -->
+          <th scope="col" class="col-num r"
+              [attr.aria-sort]="getAriaSortValue('totalValue')">
+            <button class="sort-btn r"
+                    (click)="sort('totalValue')"
+                    [attr.aria-label]="getSortAriaLabel('totalValue', 'Total value')">
+              Value
+              <span class="sort-icon" aria-hidden="true">↕</span>
+            </button>
+          </th>
+  
+        </tr>
+      </thead>
+  
+      <tbody>
+        @for (row of sortedRows(); track row.id; let i = $index) {
+          <tr
+            [attr.aria-rowindex]="i + 1"
+            [attr.aria-label]="
+              row.symbol + ', ' + row.companyName + ', ' +
+              row.shares + ' shares, price $' + row.currentPrice.toFixed(2) + ', ' +
+              (row.dayChangePct >= 0 ? 'up' : 'down') + ' ' +
+              Math.abs(row.dayChangePct).toFixed(2) + ' percent today, ' +
+              'total value $' + row.totalValue.toFixed(0)
+            "
+            [ngClass]="{
+              'row-gain': row.dayChangePct > 0,
+              'row-loss': row.dayChangePct < 0
+            }"
+          >
+            <td class="col-sym">
+              <span class="sym-badge">{{ row.symbol }}</span>
+            </td>
+            <td class="col-name">{{ row.companyName }}</td>
+            <td class="col-sector">
+              <span class="sector-tag">{{ row.sector }}</span>
+            </td>
+            <td class="col-num r">{{ row.shares | number }}</td>
+            <td class="col-num r">${{ row.avgCost | number:'1.2-2' }}</td>
+            <td class="col-num r">${{ row.currentPrice | number:'1.2-2' }}</td>
+            <td class="col-num r"
+                [ngClass]="row.dayChangePct >= 0 ? 'gain' : 'loss'">
+              <span aria-hidden="true">
+                {{ row.dayChangePct >= 0 ? '▲' : '▼' }}
+              </span>
+              {{ Math.abs(row.dayChangePct) | number:'1.2-2' }}%
+            </td>
+            <td class="col-num r"
+                [ngClass]="row.totalGain >= 0 ? 'gain' : 'loss'">
+              {{ row.totalGain >= 0 ? '+' : '' }}${{ row.totalGain | number:'1.0-0' }}
+            </td>
+            <td class="col-num r">
+              ${{ row.totalValue | number:'1.0-0' }}
+            </td>
+          </tr>
+        }
+  
+        @empty {
+          <tr>
+            <td colspan="9" class="empty-row" role="status">
+              No positions match "{{ searchQuery() }}"
+            </td>
+          </tr>
+        }
+      </tbody>
+  
+    </table>
+  </div>

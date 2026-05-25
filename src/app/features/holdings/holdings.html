@@ -1,1 +1,24 @@
-<p>holdings works!</p>
+<section aria-labelledby="holdings-heading">
+    <h2 id="holdings-heading" class="sr-only">Holdings table</h2>
+  
+    <div class="page-header">
+      <h3 class="page-title">Holdings</h3>
+      <span class="page-subtitle">
+        {{ rows().length }} positions
+      </span>
+    </div>
+  
+    @if (loading()) {
+      <div class="skeleton-table" aria-busy="true"
+           aria-label="Loading holdings data">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="skeleton-row"></div>
+        }
+      </div>
+    }
+  
+    @if (!loading()) {
+      <app-holdings-table [rows]="rows()" />
+    }
+  
+  </section>
