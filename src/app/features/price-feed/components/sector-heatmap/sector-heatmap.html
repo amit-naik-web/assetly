@@ -1,0 +1,31 @@
+<div
+  class="heatmap"
+  role="list"
+  aria-label="Sector performance heatmap"
+>
+  @for (sector of sectors; track sector.name) {
+    <div
+      class="sector-cell"
+      role="listitem"
+      [style.background]="sector.color"
+      [attr.aria-label]="
+        sector.name + ' sector, ' +
+        (sector.changePct >= 0 ? 'up' : 'down') + ' ' +
+        Math.abs(sector.changePct) + ' percent today'
+      "
+    >
+      <div
+        class="sector-name"
+        [style.color]="sector.textColor"
+      >
+        {{ sector.name }}
+      </div>
+      <div
+        class="sector-pct"
+        [style.color]="sector.textColor"
+      >
+        {{ sector.changePct >= 0 ? '+' : '' }}{{ sector.changePct }}%
+      </div>
+    </div>
+  }
+</div>

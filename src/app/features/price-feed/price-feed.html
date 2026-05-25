@@ -1,1 +1,52 @@
-<p>price-feed works!</p>
+<section aria-labelledby="prices-heading">
+    <h2 id="prices-heading" class="sr-only">Live market prices</h2>
+  
+    <!-- Connection status -->
+    <div class="page-header">
+      <div class="page-title-row">
+        <h3 class="page-title">Market prices</h3>
+        <div
+          class="connection-status"
+          role="status"
+          [attr.aria-label]="connected() ? 'Live data connected' : 'Connecting...'"
+        >
+          <span
+            class="status-dot"
+            [class.dot-connected]="connected()"
+            [class.dot-connecting]="!connected()"
+            aria-hidden="true"
+          ></span>
+          <span class="status-text">
+            {{ connected() ? 'Live' : 'Connecting...' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Price table -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">Top movers</span>
+        <span class="section-badge">Updates every 1.5s</span>
+      </div>
+      <app-price-table />
+    </div>
+  
+    <!-- Sector heatmap — deferred until visible -->
+    <div class="section-card" style="margin-top: 16px">
+      <div class="section-header">
+        <span class="section-title">Sector heatmap</span>
+        <span class="section-badge">S&amp;P 500</span>
+      </div>
+  
+      @defer (on viewport) {
+        <app-sector-heatmap />
+      } @placeholder {
+        <div class="heatmap-placeholder" aria-hidden="true"></div>
+      } @loading {
+        <div class="heatmap-skeleton" aria-busy="true"
+             aria-label="Loading sector heatmap"></div>
+      }
+    </div>
+  
+  </section>

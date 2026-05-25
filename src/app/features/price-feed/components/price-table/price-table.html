@@ -1,0 +1,106 @@
+<!-- ARIA live region — screen readers announce price changes -->
+<div
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  class="sr-only"
+  aria-label="Live price update"
+>
+  {{ announcement() }}
+</div>
+
+<!-- Stats summary -->
+<div class="stats-bar" role="status"
+     [attr.aria-label]="stats().gainers + ' gaining, ' + stats().losers + ' losing'">
+  <div class="stat">
+    <span class="stat-dot gain-dot" aria-hidden="true"></span>
+    <span class="gain">{{ stats().gainers }} gaining</span>
+  </div>
+  <span class="stat-sep" aria-hidden="true">·</span>
+  <div class="stat">
+    <span class="stat-dot loss-dot" aria-hidden="true"></span>
+    <span class="loss">{{ stats().losers }} losing</span>
+  </div>
+  <span class="stat-sep" aria-hidden="true">·</span>
+  <div class="stat">
+    <span
+      [ngClass]="stats().avgChange >= 0 ? 'gain' : 'loss'"
+    >
+      Avg {{ stats().avgChange >= 0 ? '+' : '' }}{{ stats().avgChange.toFixed(2) }}%
+    </span>
+  </div>
+</div>
+
+<!-- Price table -->
+<div class="table-wrap">
+  <table
+    class="price-table"
+    aria-label="Live market prices, updating in real time"
+    aria-live="off"
+  >
+    <caption class="sr-only">
+      Live prices for {{ symbols.length }} tracked symbols.
+      Updates every 1.5 seconds.
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col" class="col-symbol">Symbol</th>
+        <th scope="col" class="col-name">Company</th>
+        <th scope="col" class="col-price">Price</th>
+        <th scope="col" class="col-change">Change</th>
+        <th scope="col" class="col-pct">%</th>
+        <th scope="col" class="col-vol">Volume</th>
+      </tr>
+    </thead>
+    <tbody>
+        @for (symbol of symbols; track symbol) {
+          @let tick = prices()[symbol];
+          <tr
+            [ngClass]="{
+              'row-up':   (tick?.changePct ?? 0) > 0,
+              'row-down': (tick?.changePct ?? 0) < 0
+            }"
+            [attr.aria-label]="
+              symbol + ', ' +
+              getCompanyName(symbol) + ', $' +
+              (tick?.price?.toFixed(2) ?? '0') + ', ' +
+              ((tick?.changePct ?? 0) >= 0 ? 'up' : 'down') + ' ' +
+              (Math.abs(tick?.changePct ?? 0).toFixed(2)) + ' percent'
+            "
+          >
+            <td class="col-symbol">
+              <span class="symbol-badge">{{ symbol }}</span>
+            </td>
+            <td class="col-name">{{ getCompanyName(symbol) }}</td>
+            <td class="col-price">
+              ${{ tick?.price?.toFixed(2) ?? '—' }}
+            </td>
+            <td
+              class="col-change"
+              [ngClass]="{
+                'gain': (tick?.change ?? 0) >= 0,
+                'loss': (tick?.change ?? 0) < 0
+              }"
+            >
+              {{ (tick?.change ?? 0) >= 0 ? '+' : '' }}{{ tick?.change?.toFixed(2) ?? '—' }}
+            </td>
+            <td
+              class="col-pct"
+              [ngClass]="{
+                'gain': (tick?.changePct ?? 0) >= 0,
+                'loss': (tick?.changePct ?? 0) < 0
+              }"
+            >
+              <span aria-hidden="true">
+                {{ (tick?.changePct ?? 0) >= 0 ? '▲' : '▼' }}
+              </span>
+              {{ Math.abs(tick?.changePct ?? 0).toFixed(2) }}%
+            </td>
+            <td class="col-vol">
+              {{ formatVolume(tick?.volume ?? 0) }}
+            </td>
+          </tr>
+        }
+      </tbody>
+  </table>
+</div>
