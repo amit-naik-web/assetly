@@ -43,6 +43,12 @@ export const routes: Routes = [
     title: 'Assetly — Reports',
   },
   {
+    path: 'prices',
+    loadComponent: () =>
+      import('./features/price-feed/price-feed').then(m => m.PriceFeed),
+    title: 'Assetly — Live Prices',
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('./shared/components/not-found/not-found').then(m => m.NotFound),
