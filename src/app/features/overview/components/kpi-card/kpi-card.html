@@ -1,0 +1,45 @@
+<article
+  class="kpi-card"
+  [attr.aria-label]="data().label + ': ' + formattedValue + ', ' + formattedChange"
+  role="region"
+>
+  <div class="kpi-label">{{ data().label }}</div>
+
+  <div
+    class="kpi-value"
+    [ngClass]="{
+      'trend-up':   data().trend === 'up',
+      'trend-down': data().trend === 'down'
+    }"
+  >
+    {{ formattedValue }}
+  </div>
+
+  <div
+    class="kpi-change"
+    [ngClass]="{
+      'trend-up':   data().trend === 'up',
+      'trend-down': data().trend === 'down'
+    }"
+  >
+    <span aria-hidden="true">
+      @if (data().trend === 'up')   { ↑ }
+      @if (data().trend === 'down') { ↓ }
+    </span>
+    {{ formattedChange }}
+  </div>
+
+  <!-- Sparkline bars -->
+  <div class="spark" aria-hidden="true">
+    @for (point of data().sparkPoints; track $index) {
+      <div
+        class="spark-bar"
+        [style.height.%]="point"
+        [ngClass]="{
+          'bar-up':   data().trend === 'up',
+          'bar-down': data().trend === 'down'
+        }"
+      ></div>
+    }
+  </div>
+</article>

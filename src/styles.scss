@@ -1,1 +1,207 @@
 /* You can add global styles to this file, and also import other style files */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+:root {
+  --sidebar-w: 56px;
+  --topbar-h: 48px;
+  --nav-bg: #0C2340;
+  --nav-active: #185FA5;
+  --nav-icon: #7BAFD4;
+  --topbar-bg: #ffffff;
+  --surface: #F4F3EE;
+  --border: #D3D1C7;
+  --text-primary: #2C2C2A;
+  --text-secondary: #5F5E5A;
+  --gain: #0F6E56;
+  --loss: #A32D2D;
+  --brand: #185FA5;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: var(--brand);
+  color: white;
+  padding: 8px 16px;
+  z-index: 9999;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 0 0 4px 0;
+  text-decoration: none;
+
+  &:focus { top: 0; }
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  background: var(--nav-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand {
+  width: 100%;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  font-size: 22px;
+  font-weight: 700;
+  color: #378ADD;
+}
+
+.nav-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 0;
+  flex: 1;
+  width: 100%;
+}
+
+.nav-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nav-icon);
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+
+  &.active {
+    background: var(--nav-active);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #378ADD;
+    outline-offset: 2px;
+  }
+}
+
+.nav-sep {
+  width: 28px;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 6px 0;
+}
+
+.nav-bottom {
+  padding-bottom: 12px;
+}
+
+.main-area {
+  display: grid;
+  grid-template-rows: var(--topbar-h) 1fr;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.topbar {
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.page-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--gain);
+  font-weight: 500;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gain);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+
+  &:hover { background: var(--surface); }
+  &:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+}
+
+.main-content {
+  overflow: auto;
+  padding: 20px;
+
+  &:focus { outline: none; }
+}
