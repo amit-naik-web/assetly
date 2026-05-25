@@ -33,6 +33,34 @@
           <span class="loss">{{ losers() }} losing</span>
         </span>
       </div>
+
+      <!-- Donut chart — deferred until visible -->
+<div class="donut-section">
+    <h3 class="section-title">Asset allocation</h3>
+  
+    @defer (on viewport; prefetch on idle) {
+      <app-donut-chart [data]="store.allocation()" />
+  
+    } @loading (minimum 300ms) {
+      <div class="skeleton-donut" aria-busy="true" aria-label="Loading allocation chart">
+        <div class="skeleton-circle"></div>
+        <div class="skeleton-legend">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="skeleton-row"></div>
+          }
+        </div>
+      </div>
+  
+    } @placeholder {
+      <div class="donut-placeholder" aria-hidden="true"></div>
+  
+    } @error {
+      <p role="alert" class="error-msg">
+        Chart failed to load.
+        <button (click)="reloadDonut()">Retry</button>
+      </p>
+    }
+  </div>
     }
   
   </section>

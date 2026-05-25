@@ -57,3 +57,73 @@
   
   .gain { color: var(--gain); font-weight: 500; }
   .loss { color: var(--loss); font-weight: 500; }
+
+  .donut-section {
+    margin-top: 20px;
+    background: #ffffff;
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  
+  .section-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+  
+  .donut-placeholder {
+    height: 120px;
+    background: var(--surface);
+    border-radius: 8px;
+  }
+  
+  .skeleton-donut {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .skeleton-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    flex-shrink: 0;
+  }
+  
+  .skeleton-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+  
+  .skeleton-row {
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    width: 80%;
+  }
+  
+  .error-msg {
+    font-size: 13px;
+    color: var(--loss);
+  
+    button {
+      margin-left: 8px;
+      color: var(--brand);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 13px;
+    }
+  }
