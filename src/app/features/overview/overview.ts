@@ -9,17 +9,18 @@ import { PortfolioStore } from './store/portfolio.store';
 import { PortfolioService } from './services/portfolio.service';
 import { KpiCard } from './components/kpi-card/kpi-card';
 import { KpiData } from './models/portfolio.model';
+import { DonutChart } from './components/donut-chart/donut-chart';
 
 @Component({
   selector: 'app-overview',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KpiCard],
+  imports: [KpiCard, DonutChart],
   templateUrl: './overview.html',
   styleUrl: './overview.scss',
 })
 export class Overview implements OnInit {
-  private store   = inject(PortfolioStore);
+  public store   = inject(PortfolioStore);
   private service = inject(PortfolioService);
 
   readonly loading  = this.store.loading;
@@ -72,5 +73,10 @@ export class Overview implements OnInit {
         },
       ]);
     });
+  }
+
+  reloadDonut() {
+    // triggers @defer to retry
+    window.location.reload();
   }
 }
