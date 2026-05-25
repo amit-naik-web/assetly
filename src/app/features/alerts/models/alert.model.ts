@@ -1,0 +1,48 @@
+export type AlertCondition =
+  | 'PRICE_ABOVE'
+  | 'PRICE_BELOW'
+  | 'PCT_CHANGE_UP'
+  | 'PCT_CHANGE_DOWN';
+
+export type AlertStatus = 'WATCHING' | 'TRIGGERED';
+export type NotifyMethod = 'TOAST' | 'EMAIL' | 'BOTH';
+
+export interface Alert {
+  id: string;
+  symbol: string;
+  condition: AlertCondition;
+  targetValue: number;
+  notifyVia: NotifyMethod;
+  status: AlertStatus;
+  currentPrice: number;
+  progressPct: number;
+  createdAt: Date;
+  triggeredAt?: Date;
+}
+
+export interface WatchlistItem {
+  symbol: string;
+  companyName: string;
+  price: number;
+  changePct: number;
+}
+
+export const CONDITION_LABELS: Record<AlertCondition, string> = {
+  PRICE_ABOVE:     'Price above',
+  PRICE_BELOW:     'Price below',
+  PCT_CHANGE_UP:   '% gain exceeds',
+  PCT_CHANGE_DOWN: '% drop exceeds',
+};
+
+export const VALID_SYMBOLS = [
+  'AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL',
+  'META', 'AMZN', 'JPM', 'BRK.B', 'JNJ',
+  'V', 'PG', 'XOM', 'UNH', 'MA',
+];
+
+export const MOCK_PRICES: Record<string, number> = {
+  AAPL: 213.48, MSFT: 421.05, NVDA: 134.72, TSLA: 247.61,
+  GOOGL: 178.30, META: 583.20, AMZN: 224.71, JPM: 282.54,
+  'BRK.B': 541.88, JNJ: 148.90, V: 310.45, PG: 162.30,
+  XOM: 118.45, UNH: 522.30, MA: 480.22,
+};

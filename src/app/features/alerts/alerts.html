@@ -1,1 +1,24 @@
-<p>alerts works!</p>
+<section aria-labelledby="alerts-heading">
+    <h2 id="alerts-heading" class="sr-only">Alerts and watchlist</h2>
+  
+    <div class="page-header">
+      <h3 class="page-title">Alerts</h3>
+    </div>
+  
+    <div class="alerts-layout">
+  
+      <!-- Left — builder + list -->
+      <div class="left-col">
+        <app-alert-builder (alertCreated)="onAlertCreated($event)" />
+        <div style="margin-top: 16px">
+          <app-alert-list />
+        </div>
+      </div>
+  
+      <!-- Right — watchlist -->
+      <div class="right-col">
+        <app-watchlist />
+      </div>
+  
+    </div>
+  </section>

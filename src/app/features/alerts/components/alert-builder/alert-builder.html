@@ -1,0 +1,150 @@
+<div class="builder-card" role="region" aria-labelledby="builder-heading">
+    <h3 id="builder-heading" class="card-title">Create alert</h3>
+  
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      role="form"
+      aria-label="Create a new price alert"
+      novalidate
+    >
+  
+      <!-- Symbol field -->
+      <div class="field-group">
+        <label for="alert-symbol" class="field-label">
+          Stock symbol
+          <span class="required-mark" aria-hidden="true">*</span>
+          <span class="sr-only">(required)</span>
+        </label>
+  
+        <input
+          id="alert-symbol"
+          type="text"
+          class="field-input"
+          formControlName="symbol"
+          placeholder="e.g. AAPL"
+          autocomplete="off"
+          autocapitalize="characters"
+          [ngClass]="{
+            'input-error':   symbolCtrl.invalid && symbolCtrl.touched,
+            'input-success': symbolValid() === true
+          }"
+          [attr.aria-invalid]="symbolCtrl.invalid && symbolCtrl.touched ? 'true' : null"
+          aria-describedby="symbol-validation symbol-hint"
+        />
+  
+        <span id="symbol-hint" class="field-hint">
+          US ticker symbol (AAPL, MSFT, NVDA…)
+        </span>
+  
+        <!-- Validation state — ARIA live region -->
+        <div
+          id="symbol-validation"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          class="validation-msg"
+          [ngClass]="{
+            'msg-success': symbolValid() === true,
+            'msg-error':   symbolValid() === false,
+            'msg-loading': validating()
+          }"
+        >
+          @if (validating()) {
+            <span>Validating symbol…</span>
+          }
+          @if (!validating() && symbolMessage()) {
+            <span>{{ symbolMessage() }}</span>
+          }
+        </div>
+  
+        @if (symbolCtrl.errors?.['invalidSymbol'] && symbolCtrl.touched) {
+          <span
+            id="symbol-error"
+            class="field-error"
+            role="alert"
+            aria-live="assertive"
+          >
+            {{ symbolMessage() }}
+          </span>
+        }
+      </div>
+  
+      <!-- Condition field -->
+      <div class="field-group">
+        <label for="alert-condition" class="field-label">Condition</label>
+        <select
+          id="alert-condition"
+          class="field-select"
+          formControlName="condition"
+          aria-describedby="condition-hint"
+        >
+          @for (cond of conditions; track cond) {
+            <option [value]="cond">{{ conditionLabels[cond] }}</option>
+          }
+        </select>
+      </div>
+  
+      <!-- Target value field -->
+      <div class="field-group">
+        <label for="alert-target" class="field-label">
+          Target value
+          <span class="required-mark" aria-hidden="true">*</span>
+          <span class="sr-only">(required)</span>
+        </label>
+        <input
+          id="alert-target"
+          type="number"
+          class="field-input"
+          formControlName="targetValue"
+          placeholder="0.00"
+          step="0.01"
+          min="0.01"
+          [attr.aria-invalid]="targetCtrl.invalid && targetCtrl.touched ? 'true' : null"
+          aria-describedby="target-hint"
+        />
+        <span id="target-hint" class="field-hint">
+          @if (symbolPrice()) {
+            Current: ${{ symbolPrice()!.toFixed(2) }}
+          } @else {
+            Enter a price or percentage target
+          }
+        </span>
+        @if (targetCtrl.errors?.['min'] && targetCtrl.touched) {
+          <span class="field-error" role="alert">
+            Value must be greater than 0
+          </span>
+        }
+      </div>
+  
+      <!-- Notify via field -->
+      <div class="field-group">
+        <label for="alert-notify" class="field-label">Notify via</label>
+        <select
+          id="alert-notify"
+          class="field-select"
+          formControlName="notifyVia"
+        >
+          <option value="TOAST">In-app notification</option>
+          <option value="EMAIL">Email</option>
+          <option value="BOTH">Both</option>
+        </select>
+      </div>
+  
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="form.invalid || form.pending"
+        [attr.aria-busy]="form.pending ? 'true' : null"
+        aria-label="Create price alert"
+      >
+        @if (form.pending) {
+          Validating…
+        } @else {
+          Create alert
+        }
+      </button>
+  
+    </form>
+  </div>

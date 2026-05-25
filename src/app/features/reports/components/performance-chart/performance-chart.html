@@ -1,0 +1,34 @@
+<div
+  class="perf-chart"
+  role="list"
+  aria-label="Performance by symbol"
+>
+  @for (row of rows(); track row.symbol) {
+    <div
+      class="perf-row"
+      role="listitem"
+      [attr.aria-label]="
+        row.symbol + ': ' +
+        (row.returnPct >= 0 ? 'up' : 'down') + ' ' +
+        Math.abs(row.returnPct) + ' percent this month'
+      "
+    >
+      <span class="perf-sym">{{ row.symbol }}</span>
+      <div class="bar-wrap">
+        <div
+          class="bar"
+          [style.width.%]="barWidth(row)"
+          [style.background]="row.color"
+          [ngClass]="row.returnPct < 0 ? 'bar-loss' : ''"
+          aria-hidden="true"
+        ></div>
+      </div>
+      <span
+        class="perf-pct"
+        [ngClass]="row.returnPct >= 0 ? 'gain' : 'loss'"
+      >
+        {{ row.returnPct >= 0 ? '+' : '' }}{{ row.returnPct }}%
+      </span>
+    </div>
+  }
+</div>
