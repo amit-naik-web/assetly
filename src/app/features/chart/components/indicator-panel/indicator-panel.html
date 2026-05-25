@@ -1,0 +1,46 @@
+<div class="panel" role="region" aria-label="Technical indicators">
+    <div class="panel-title">Technical indicators</div>
+  
+    <table
+      class="indicator-table"
+      aria-label="Technical indicator values and signals"
+    >
+      <caption class="sr-only">
+        Technical indicators for {{ symbol() }}.
+        Buy signal means price condition is bullish. Sell means bearish.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Indicator</th>
+          <th scope="col">Value</th>
+          <th scope="col">Signal</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ind of indicators(); track ind.label) {
+          <tr>
+            <td class="ind-label">{{ ind.label }}</td>
+            <td class="ind-value">{{ ind.formatted }}</td>
+            <td>
+              <span
+                class="signal-badge"
+                [ngClass]="{
+                  'sig-buy':     ind.signal === 'buy',
+                  'sig-sell':    ind.signal === 'sell',
+                  'sig-neutral': ind.signal === 'neutral'
+                }"
+                [attr.aria-label]="ind.label + ' signal: ' + ind.signal"
+              >
+                {{ ind.signal | titlecase }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  
+    <div class="current-price" aria-label="Current price">
+      <span class="price-label">Current</span>
+      <span class="price-value">${{ currentPrice().toFixed(2) }}</span>
+    </div>
+  </div>

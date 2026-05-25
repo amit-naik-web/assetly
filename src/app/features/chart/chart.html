@@ -1,1 +1,75 @@
-<p>chart works!</p>
+<section aria-labelledby="chart-heading">
+  <h2 id="chart-heading" class="sr-only">Chart analysis</h2>
+
+  <!-- Symbol + Range selector row -->
+  <div class="controls-row">
+    <div class="symbol-tabs" role="group" aria-label="Select stock symbol">
+      @for (sym of chartSymbols; track sym) {
+        <button
+          class="symbol-tab"
+          [class.active]="symbol() === sym"
+          [attr.aria-pressed]="symbol() === sym"
+          (click)="changeSymbol(sym)"
+        >
+          {{ sym }}
+        </button>
+      }
+    </div>
+
+    <div class="range-tabs" role="group" aria-label="Select time range">
+      @for (range of timeRanges; track range) {
+        <button
+          class="range-tab"
+          [class.active]="selectedRange() === range"
+          [attr.aria-pressed]="selectedRange() === range"
+          (click)="changeRange(range)"
+        >
+          {{ range }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Main chart area -->
+  <div class="chart-layout">
+
+    <!-- Candlestick chart -->
+    <div class="chart-card">
+      <div class="card-header">
+        <span class="card-title">{{ symbol() }} — candlestick</span>
+        @if (loading()) {
+          <span class="loading-badge" aria-live="polite" role="status">
+            Loading...
+          </span>
+        }
+      </div>
+
+      @if (!loading() && candles().length) {
+        <div class="chart-body">
+          <app-candlestick
+            [candles]="candles()"
+            [symbol]="symbol()"
+          />
+        </div>
+      }
+
+      @if (loading()) {
+        <div
+          class="chart-skeleton"
+          aria-busy="true"
+          aria-label="Loading chart data"
+        ></div>
+      }
+    </div>
+
+    <!-- Indicator panel -->
+    @if (!loading() && candles().length) {
+      <app-indicator-panel
+        [candles]="candles()"
+        [symbol]="symbol()"
+      />
+    }
+
+  </div>
+
+</section>

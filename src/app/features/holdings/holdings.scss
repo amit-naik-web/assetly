@@ -1,0 +1,41 @@
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+  
+  .page-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  
+  .skeleton-table {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .skeleton-row {
+    height: 44px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }

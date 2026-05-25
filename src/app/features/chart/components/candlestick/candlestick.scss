@@ -1,0 +1,87 @@
+.chart-container {
+    position: relative;
+    outline: none;
+  
+    &:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+  
+  .tooltip {
+    position: absolute;
+    top: 12px;
+    left: 60px;
+    background: #ffffff;
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    z-index: 10;
+    min-width: 140px;
+  
+    &.pinned {
+      border-color: var(--brand);
+      pointer-events: auto;
+    }
+  }
+  
+  .tooltip-date {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+  
+  .tooltip-grid {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 3px 8px;
+  }
+  
+  .tl {
+    color: var(--text-secondary);
+    font-size: 11px;
+  }
+  
+  .tv {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .pinned-badge {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--brand);
+  }
+  
+  .gain { color: var(--gain) !important; }
+  .loss { color: var(--loss) !important; }
+  
+  .data-table-toggle {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  
+    summary {
+      cursor: pointer;
+      color: var(--brand);
+      &:hover { text-decoration: underline; }
+    }
+  
+    th, td {
+      padding: 5px 8px;
+      border: 0.5px solid var(--border);
+      text-align: left;
+    }
+  
+    th {
+      background: var(--surface);
+      font-weight: 500;
+      font-size: 11px;
+    }
+  }

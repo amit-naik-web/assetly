@@ -1,0 +1,100 @@
+<!-- ARIA live region for keyboard navigation announcements -->
+<div
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  class="sr-only"
+>{{ announcement() }}</div>
+
+<!-- Chart container — role="application" enables keyboard interaction semantics -->
+<div
+  class="chart-container"
+  role="application"
+  [attr.aria-label]="symbol() + ' candlestick chart. Use arrow keys to navigate data points.'"
+  aria-describedby="chart-instructions"
+  tabindex="0"
+>
+  <!-- Screen reader instructions -->
+  <p id="chart-instructions" class="sr-only">
+    Left and right arrow keys move the crosshair between data points.
+    Space pins or unpins the tooltip. Escape dismisses. Home and End jump to first and last candle.
+  </p>
+
+  <!-- D3 renders here via ViewChild -->
+  <svg #svgEl
+    focusable="false"
+    aria-hidden="true"
+    style="width:100%; display:block"
+  ></svg>
+
+  <!-- Tooltip -->
+  @if (activCandle()) {
+    <div
+      class="tooltip"
+      [class.pinned]="tooltipPinned()"
+      role="tooltip"
+    >
+      <div class="tooltip-date">
+        {{ activCandle()!.date.toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+          })
+        }}
+      </div>
+      <div class="tooltip-grid">
+        <span class="tl">O</span>
+        <span class="tv">${{ activCandle()!.open.toFixed(2) }}</span>
+        <span class="tl">H</span>
+        <span class="tv">${{ activCandle()!.high.toFixed(2) }}</span>
+        <span class="tl">L</span>
+        <span class="tv">${{ activCandle()!.low.toFixed(2) }}</span>
+        <span class="tl">C</span>
+        <span
+          class="tv"
+          [ngClass]="activCandle()!.close >= activCandle()!.open ? 'gain' : 'loss'"
+        >
+          ${{ activCandle()!.close.toFixed(2) }}
+        </span>
+      </div>
+      @if (tooltipPinned()) {
+        <div class="pinned-badge">📌 Pinned</div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Data table alternative for screen readers -->
+<details class="data-table-toggle">
+  <summary>View {{ symbol() }} price data table</summary>
+  <div style="overflow-x: auto; margin-top: 8px;">
+    <table
+      [attr.aria-label]="symbol() + ' OHLCV price data'"
+      style="width:100%; font-size:12px; border-collapse:collapse"
+    >
+      <caption class="sr-only">{{ symbol() }} daily OHLCV price data</caption>
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Open</th>
+          <th scope="col">High</th>
+          <th scope="col">Low</th>
+          <th scope="col">Close</th>
+          <th scope="col">Volume</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of candles().slice(-10); track c.date.toISOString()) {
+          <tr>
+            <td>{{ c.date.toLocaleDateString() }}</td>
+            <td>${{ c.open.toFixed(2) }}</td>
+            <td>${{ c.high.toFixed(2) }}</td>
+            <td>${{ c.low.toFixed(2) }}</td>
+            <td [style.color]="c.close >= c.open ? '#0F6E56' : '#A32D2D'">
+              ${{ c.close.toFixed(2) }}
+            </td>
+            <td>{{ (c.volume / 1_000_000).toFixed(1) }}M</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</details>
