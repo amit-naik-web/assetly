@@ -1,0 +1,38 @@
+<section aria-labelledby="overview-heading">
+    <h2 id="overview-heading" class="sr-only">Portfolio Overview</h2>
+  
+    <!-- Loading state -->
+    @if (loading()) {
+      <div class="loading-grid" aria-busy="true" aria-label="Loading portfolio data">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    }
+  
+    <!-- KPI Cards -->
+    @if (!loading()) {
+      <div class="kpi-grid" role="list" aria-label="Portfolio key metrics">
+        @for (kpi of kpis(); track kpi.id) {
+          <div role="listitem">
+            <app-kpi-card [data]="kpi" />
+          </div>
+        }
+      </div>
+  
+      <!-- Summary bar -->
+      <div class="summary-bar" role="status" aria-live="polite"
+           [attr.aria-label]="gainers() + ' positions gaining, ' + losers() + ' positions losing today'">
+        <span class="summary-item">
+          <span class="dot dot-up" aria-hidden="true"></span>
+          <span class="gain">{{ gainers() }} gaining</span>
+        </span>
+        <span class="summary-sep" aria-hidden="true">·</span>
+        <span class="summary-item">
+          <span class="dot dot-down" aria-hidden="true"></span>
+          <span class="loss">{{ losers() }} losing</span>
+        </span>
+      </div>
+    }
+  
+  </section>
