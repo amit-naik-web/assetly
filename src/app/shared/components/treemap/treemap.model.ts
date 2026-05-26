@@ -30,6 +30,8 @@ export interface TreemapNode {
     fontWeight: number;
     pctFontSize: number;
     pctFontWeight: number;
+    labelLayout: 'stacked' | 'compact' | 'symbol-only' | 'none';
+    pctLabel: string;
   }
   
   export interface TreemapSector {

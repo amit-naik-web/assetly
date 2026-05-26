@@ -134,8 +134,8 @@ export class Treemap implements AfterViewInit, OnDestroy {
         const treemapLayout = d3.treemap<any>()
             .size([W, H])
             .padding(0)
-            .paddingTop(SECTOR_HEADER_HEIGHT)
-            .paddingInner(1)
+            .paddingTop(d => (d.depth === 1 ? SECTOR_HEADER_HEIGHT : 0))
+            .paddingInner(2)
             .paddingOuter(0)
             .round(true);
 
@@ -149,26 +149,48 @@ export class Treemap implements AfterViewInit, OnDestroy {
         // Extract sector rectangles
         const sectorNodes: TreemapSector[] = ((root.children ?? []) as HierarchyRectangularNode<any>[]).map(c => ({
             name: c.data.name,
-            x0: c.x0, y0: c.y0,
-            x1: c.x1, y1: c.y1,
+            x0: c.x0!, y0: c.y0!,
+            x1: c.x1!, y1: c.y1!,
             headerHeight: SECTOR_HEADER_HEIGHT,
-            contentY0: c.y0 + SECTOR_HEADER_HEIGHT,
+            contentY0: c.y0! + SECTOR_HEADER_HEIGHT,
         }));
 
-        // Extract leaf rectangles
+        const sectorByName = new Map(
+            sectorNodes.map(s => [s.name, s]),
+        );
+
+        // Extract leaf rectangles — clamp below sector header band
         const leafNodes: TreemapLeaf[] = (
             root.leaves() as HierarchyRectangularNode<any>[]
-        ).map(leaf => {
+        ).flatMap(leaf => {
+            const sector = sectorByName.get(leaf.data.sector);
+            let y0 = leaf.y0!;
+            const y1 = leaf.y1!;
+            const x0 = leaf.x0!;
+
+            if (sector && y0 < sector.contentY0) {
+                y0 = sector.contentY0;
+            }
+
+            const w = leaf.x1! - x0;
+            const h = Math.max(0, y1 - y0);
+            if (w < 1 || h < 1) {
+                return [];
+            }
+
             const pct = leaf.data.dayChangePct ?? 0;
-            const w = leaf.x1 - leaf.x0;
-            const h = leaf.y1 - leaf.y0;
             const portfolioPct = totalValue > 0
                 ? (leaf.data.totalValue / totalValue) * 100
                 : 0;
-            const typography = this.calcTypography(
-                w, h, leaf.data.symbol, portfolioPct, maxPortfolioPct,
+            const pctLabel = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+            const labelLayout = this.resolveLabelLayout(
+                w, h, leaf.data.symbol, pctLabel,
             );
-            return {
+            const typography = this.calcTypography(
+                w, h, leaf.data.symbol, portfolioPct, maxPortfolioPct, labelLayout, pctLabel,
+            );
+
+            return [{
                 id: leaf.data.id,
                 symbol: leaf.data.symbol,
                 companyName: leaf.data.companyName,
@@ -176,19 +198,45 @@ export class Treemap implements AfterViewInit, OnDestroy {
                 totalValue: leaf.data.totalValue,
                 dayChangePct: pct,
                 currentPrice: leaf.data.currentPrice,
-                x0: leaf.x0, y0: leaf.y0,
-                x1: leaf.x1, y1: leaf.y1,
+                x0,
+                y0,
+                x1: x0 + w,
+                y1: y0 + h,
                 width: w,
                 height: h,
                 color: this.fillColor(pct),
                 textColor: this.labelColor(pct),
                 portfolioPct,
+                labelLayout,
+                pctLabel,
                 ...typography,
-            };
+            }];
         });
 
         this.sectors.set(sectorNodes);
         this.leaves.set(leafNodes);
+    }
+
+    private resolveLabelLayout(
+        w: number,
+        h: number,
+        symbol: string,
+        pctLabel: string,
+    ): TreemapLeaf['labelLayout'] {
+        const compactMinW = symbol.length * 5 + pctLabel.length * 4 + 6;
+
+        // Prefer horizontal labels — easier to read on medium/small tiles (e.g. CAT)
+        if (h >= 14 && w >= Math.max(26, compactMinW)) {
+            return 'compact';
+        }
+        // Stacked only on very large tiles where horizontal would feel sparse
+        if (w >= 64 && h >= 52) {
+            return 'stacked';
+        }
+        if (w >= 18 && h >= 12) {
+            return 'symbol-only';
+        }
+        return 'none';
     }
 
     private calcTypography(
@@ -197,6 +245,8 @@ export class Treemap implements AfterViewInit, OnDestroy {
         symbol: string,
         portfolioPct: number,
         maxPortfolioPct: number,
+        labelLayout: TreemapLeaf['labelLayout'],
+        pctLabel: string,
     ): Pick<TreemapLeaf, 'fontSize' | 'fontWeight' | 'pctFontSize' | 'pctFontWeight'> {
         const ratio = maxPortfolioPct > 0 ? portfolioPct / maxPortfolioPct : 0;
         const t = Math.pow(ratio, 0.6);
@@ -204,13 +254,19 @@ export class Treemap implements AfterViewInit, OnDestroy {
         let fontSize = 11 + t * 23;
         const fontWeight = Math.round(500 + t * 300);
 
-        const maxByWidth = w / Math.max(symbol.length * 0.52, 2);
-        const maxByHeight = h * 0.42;
+        const labelChars = labelLayout === 'compact'
+            ? symbol.length + pctLabel.length + 1
+            : symbol.length;
+        const maxByWidth = w / Math.max(labelChars * 0.48, 2);
+        const heightShare = labelLayout === 'stacked' ? 0.38 : 0.72;
+        const maxByHeight = h * heightShare;
         fontSize = Math.min(fontSize, maxByWidth, maxByHeight);
-        fontSize = Math.max(8, Math.round(fontSize));
+        fontSize = Math.max(labelLayout === 'compact' ? 10 : 8, Math.round(fontSize));
 
-        const pctFontSize = Math.max(8, Math.round(fontSize * 0.78));
-        const pctFontWeight = Math.max(450, fontWeight - 150);
+        const pctFontSize = labelLayout === 'compact'
+            ? fontSize
+            : Math.max(7, Math.round(fontSize * 0.78));
+        const pctFontWeight = Math.max(450, fontWeight - (labelLayout === 'compact' ? 50 : 150));
 
         return { fontSize, fontWeight, pctFontSize, pctFontWeight };
     }

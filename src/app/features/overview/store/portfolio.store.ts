@@ -90,16 +90,22 @@ export const PortfolioStore = signalStore(
         sectors[p.sector] = (sectors[p.sector] ?? 0) + val;
       });
       const colors: Record<string, string> = {
-        'Technology': '#378ADD',
-        'Financials':  '#1D9E75',
-        'Automotive':  '#EF9F27',
-        'Healthcare':  '#7F77DD',
-        'Energy':      '#E24B4A',
+        Technology:  '#378ADD',
+        Financials:  '#1D9E75',
+        Automotive:  '#EF9F27',
+        Healthcare:  '#C44D9E',
+        Energy:      '#E24B4A',
+        Consumer:    '#BA7517',
+        Industrials: '#5046A0',
       };
-      return Object.entries(sectors).map(([label, val]) => ({
+      const fallbackPalette = [
+        '#378ADD', '#1D9E75', '#EF9F27', '#C44D9E', '#E24B4A',
+        '#BA7517', '#5046A0', '#5DCAA5', '#185FA5',
+      ];
+      return Object.entries(sectors).map(([label, val], index) => ({
         label,
         pct: Math.round((val / total) * 100),
-        color: colors[label] ?? '#D3D1C7',
+        color: colors[label] ?? fallbackPalette[index % fallbackPalette.length],
       }));
     }),
 

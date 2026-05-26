@@ -17,7 +17,8 @@
   --ov-gain: var(--gain, #0F6E56);
   --ov-loss: var(--loss, #A32D2D);
   --ov-brand: var(--brand, #185FA5);
-  --ov-treemap-bg: #F8F7F4;
+  --ov-treemap-separator: #96948c;
+  --ov-treemap-bg: var(--ov-treemap-separator);
   --ov-card-bg: #ffffff;
 
   display: grid;
@@ -344,6 +345,8 @@
 
 // ── Allocation panel (col 5, full height) ─────────────
 .allocation-panel {
+  --allocation-pad-x: 18px;
+
   grid-column: 5;
   grid-row: 1 / -1;
   align-self: stretch;
@@ -351,7 +354,7 @@
   min-height: 0;
   background: var(--ov-card-bg);
   border-left: 2px solid var(--ov-border);
-  padding: 16px 18px;
+  padding: 16px var(--allocation-pad-x);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -360,6 +363,8 @@
 
 .allocation-header {
   flex-shrink: 0;
+  margin-inline: calc(-1 * var(--allocation-pad-x));
+  padding-inline: var(--allocation-pad-x);
   padding-bottom: 14px;
   border-bottom: 1px solid var(--ov-border);
 }
@@ -488,20 +493,23 @@
     flex: 1;
     min-height: 0;
     width: 100%;
-    --treemap-bg: var(--ov-treemap-bg);
-    background: var(--ov-treemap-bg);
+    --treemap-separator: var(--ov-treemap-separator);
+    --treemap-bg: var(--ov-treemap-separator);
+    --treemap-header-bg: var(--ov-surface);
+    --treemap-border: var(--ov-treemap-separator);
+    background: var(--ov-treemap-separator);
   }
 
   .sector-header-label {
     color: var(--ov-text-muted);
   }
 
-  .leaf.leaf-focused.leaf-gain {
-    box-shadow: inset 0 0 0 3px var(--ov-gain);
+  .leaf.leaf-focused.leaf-gain::after {
+    border-color: var(--ov-gain);
   }
 
-  .leaf.leaf-focused.leaf-loss {
-    box-shadow: inset 0 0 0 3px var(--ov-loss);
+  .leaf.leaf-focused.leaf-loss::after {
+    border-color: var(--ov-loss);
   }
 
   .a11y-leaf:focus,

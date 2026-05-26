@@ -47,7 +47,7 @@ import {
     });
   
     readonly ariaLabel = computed(() =>
-      'Sector wise allocation: ' +
+      'Sector-wise allocation: ' +
       this.data().map(s => `${s.label} ${s.pct}%`).join(', ')
     );
   }
