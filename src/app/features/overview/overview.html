@@ -1,66 +1,147 @@
-<section aria-labelledby="overview-heading">
-    <h2 id="overview-heading" class="sr-only">Portfolio Overview</h2>
-  
-    <!-- Loading state -->
-    @if (loading()) {
-      <div class="loading-grid" aria-busy="true" aria-label="Loading portfolio data">
-        @for (i of [1,2,3,4]; track i) {
-          <div class="skeleton-card"></div>
-        }
-      </div>
-    }
-  
-    <!-- KPI Cards -->
-    @if (!loading()) {
-      <div class="kpi-grid" role="list" aria-label="Portfolio key metrics">
+<section class="overview-shell" aria-labelledby="overview-heading">
+  <h2 id="overview-heading" class="sr-only">Portfolio overview</h2>
+
+  @if (!loading()) {
+    <div class="portfolio-header">
+      <div class="kpi-metrics" role="list" aria-label="Portfolio key metrics">
         @for (kpi of kpis(); track kpi.id) {
-          <div role="listitem">
-            <app-kpi-card [data]="kpi" />
+          <div
+            class="kpi-cell kpi-cell--metric"
+            role="listitem"
+            [attr.aria-label]="kpi.label + ': ' + formatKpiValue(kpi) + ', ' + kpi.changeLabel"
+          >
+            <p class="kpi-label">{{ kpi.label }}</p>
+            <p class="kpi-value"
+               [ngClass]="{
+                 'kpi-gain': kpi.trend === 'up',
+                 'kpi-loss': kpi.trend === 'down'
+               }">
+              {{ formatKpiValue(kpi) }}
+            </p>
+            <p class="kpi-sub"
+               [ngClass]="{
+                 'gain': kpi.trend === 'up',
+                 'loss': kpi.trend === 'down'
+               }">
+              @if (kpi.trend === 'neutral') {
+                {{ kpi.changeLabel }}
+              } @else {
+                {{ kpi.trend === 'up' ? '↑' : '↓' }} {{ kpi.changeLabel }}
+              }
+            </p>
           </div>
         }
       </div>
-  
-      <!-- Summary bar -->
-      <div class="summary-bar" role="status" aria-live="polite"
-           [attr.aria-label]="gainers() + ' positions gaining, ' + losers() + ' positions losing today'">
-        <span class="summary-item">
-          <span class="dot dot-up" aria-hidden="true"></span>
-          <span class="gain">{{ gainers() }} gaining</span>
-        </span>
-        <span class="summary-sep" aria-hidden="true">·</span>
-        <span class="summary-item">
-          <span class="dot dot-down" aria-hidden="true"></span>
-          <span class="loss">{{ losers() }} losing</span>
-        </span>
-      </div>
 
-      <!-- Donut chart — deferred until visible -->
-<div class="donut-section">
-    <h3 class="section-title">Asset allocation</h3>
-  
-    @defer (on viewport; prefetch on idle) {
-      <app-donut-chart [data]="store.allocation()" />
-  
-    } @loading (minimum 300ms) {
-      <div class="skeleton-donut" aria-busy="true" aria-label="Loading allocation chart">
-        <div class="skeleton-circle"></div>
-        <div class="skeleton-legend">
-          @for (i of [1,2,3,4]; track i) {
-            <div class="skeleton-row"></div>
+      <div class="treemap-toolbar">
+        <div class="treemap-toolbar-heading">
+          <span class="treemap-toolbar-label" id="portfolio-map-label">PORTFOLIO MAP</span>
+        </div>
+        <div
+          class="sector-filter"
+          role="group"
+          aria-labelledby="portfolio-map-label"
+          aria-label="Filter portfolio map by sector"
+        >
+          @for (s of sectors; track s) {
+            <button
+              type="button"
+              class="sector-tab"
+              [class.sector-tab--active]="activeSector() === s"
+              [attr.aria-pressed]="activeSector() === s"
+              [attr.aria-label]="sectorChipLabel(s)"
+              (click)="setSector(s)"
+            >
+              <span class="sector-tab__label">{{ s }}</span>
+              @if (s !== 'All') {
+                @let change = sectorChangeFor(s);
+                @if (change !== null) {
+                  <span class="sector-tab__delta" [ngClass]="change >= 0 ? 'gain' : 'loss'">
+                    {{ formatSectorPct(change) }}
+                  </span>
+                }
+              }
+            </button>
           }
         </div>
       </div>
-  
-    } @placeholder {
-      <div class="donut-placeholder" aria-hidden="true"></div>
-  
-    } @error {
-      <p role="alert" class="error-msg">
-        Chart failed to load.
-        <button (click)="reloadDonut()">Retry</button>
-      </p>
-    }
-  </div>
-    }
-  
-  </section>
+    </div>
+
+    <aside class="allocation-panel" aria-label="Asset allocation">
+      <header class="allocation-header">
+        <div class="allocation-heading">
+          <p class="allocation-eyebrow">Portfolio</p>
+          <h3 class="allocation-title">Allocation</h3>
+        </div>
+      </header>
+
+      <div class="allocation-body">
+        @defer (on idle) {
+          <app-donut-chart [data]="store.allocation()" layout="stacked" />
+        } @placeholder {
+          <div class="allocation-skeleton allocation-skeleton--chart" aria-hidden="true"></div>
+        }
+      </div>
+    </aside>
+
+    <div class="treemap-zone">
+      <div class="treemap-hero" #treemapHero>
+        @defer (on viewport; prefetch on idle) {
+          <app-treemap
+            [nodes]="treemapNodes()"
+            [height]="treemapHeight()"
+            [navigable]="true"
+            theme="light"
+          />
+        } @loading (minimum 300ms) {
+          <div class="treemap-loading" aria-busy="true" aria-label="Loading portfolio map"></div>
+        } @placeholder {
+          <div class="treemap-placeholder" aria-hidden="true"></div>
+        } @error {
+          <p role="alert" class="treemap-error">
+            Map failed to load.
+            <button type="button">Retry</button>
+          </p>
+        }
+      </div>
+    </div>
+
+    <div class="market-today" role="region" aria-label="Market today">
+      <div class="market-today-heading">
+        <span class="market-today-label">Market Today</span>
+      </div>
+      <div class="indices-list" role="list" aria-label="Market indices">
+        @for (index of marketIndices; track index.label) {
+          <article class="index-card" role="listitem" [attr.aria-label]="indexAriaLabel(index)">
+            <span class="index-label">{{ index.label }}</span>
+            <span class="index-value">{{ index.value }}</span>
+            <span class="index-change" [ngClass]="index.changePct >= 0 ? 'gain' : 'loss'">
+              {{ index.changePct >= 0 ? '+' : '' }}{{ index.changePct }}%
+            </span>
+          </article>
+        }
+      </div>
+    </div>
+
+  }
+
+  @if (loading()) {
+    <div class="portfolio-header portfolio-header--skeleton" aria-hidden="true">
+      <div class="kpi-metrics">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="kpi-skeleton-cell kpi-skeleton-cell--metric"></div>
+        }
+      </div>
+      <div class="treemap-toolbar treemap-toolbar--skeleton"></div>
+    </div>
+    <aside class="allocation-panel allocation-panel--skeleton" aria-busy="true" aria-label="Loading allocation">
+      <div class="allocation-skeleton allocation-skeleton--header" aria-hidden="true"></div>
+      <div class="allocation-skeleton allocation-skeleton--chart" aria-hidden="true"></div>
+    </aside>
+    <div class="treemap-zone treemap-zone--skeleton" aria-busy="true" aria-label="Loading portfolio map">
+      <div class="treemap-hero treemap-loading" aria-hidden="true"></div>
+    </div>
+    <div class="market-today market-today--skeleton" aria-hidden="true"></div>
+  }
+
+</section>
