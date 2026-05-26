@@ -223,15 +223,26 @@ export class Treemap implements AfterViewInit, OnDestroy {
         symbol: string,
         pctLabel: string,
     ): TreemapLeaf['labelLayout'] {
-        const compactMinW = symbol.length * 5 + pctLabel.length * 4 + 6;
+        const compactMinW = symbol.length * 5.2 + pctLabel.length * 4.2 + 8;
+        const canCompact = h >= 14 && w >= Math.max(26, compactMinW);
+        const area = w * h;
+        const aspect = w / Math.max(h, 1);
 
-        // Prefer horizontal labels — easier to read on medium/small tiles (e.g. CAT)
-        if (h >= 14 && w >= Math.max(26, compactMinW)) {
+        // Horizontal only on physically small or wide-strip tiles (e.g. CAT)
+        const needsCompact =
+            h < 28 ||
+            area < 900 ||
+            (h < 38 && aspect >= 1.2);
+
+        if (needsCompact && canCompact) {
             return 'compact';
         }
-        // Stacked only on very large tiles where horizontal would feel sparse
-        if (w >= 64 && h >= 52) {
+        // Vertical when there is room for two readable lines
+        if (w >= 28 && h >= 28) {
             return 'stacked';
+        }
+        if (canCompact) {
+            return 'compact';
         }
         if (w >= 18 && h >= 12) {
             return 'symbol-only';
@@ -254,19 +265,26 @@ export class Treemap implements AfterViewInit, OnDestroy {
         let fontSize = 11 + t * 23;
         const fontWeight = Math.round(500 + t * 300);
 
-        const labelChars = labelLayout === 'compact'
-            ? symbol.length + pctLabel.length + 1
-            : symbol.length;
-        const maxByWidth = w / Math.max(labelChars * 0.48, 2);
-        const heightShare = labelLayout === 'stacked' ? 0.38 : 0.72;
-        const maxByHeight = h * heightShare;
-        fontSize = Math.min(fontSize, maxByWidth, maxByHeight);
-        fontSize = Math.max(labelLayout === 'compact' ? 10 : 8, Math.round(fontSize));
+        if (labelLayout === 'compact') {
+            const labelChars = symbol.length + pctLabel.length + 1;
+            const maxByWidth = (w - 8) / Math.max(labelChars * 0.55, 2);
+            fontSize = Math.min(fontSize, maxByWidth, h * 0.68);
+            fontSize = Math.max(8, Math.round(fontSize));
+            return {
+                fontSize,
+                fontWeight,
+                pctFontSize: Math.max(8, Math.round(fontSize * 0.92)),
+                pctFontWeight: Math.max(500, fontWeight - 50),
+            };
+        }
 
-        const pctFontSize = labelLayout === 'compact'
-            ? fontSize
-            : Math.max(7, Math.round(fontSize * 0.78));
-        const pctFontWeight = Math.max(450, fontWeight - (labelLayout === 'compact' ? 50 : 150));
+        const maxByWidth = w / Math.max(symbol.length * 0.52, 2);
+        const maxByHeight = h * 0.36;
+        fontSize = Math.min(fontSize, maxByWidth, maxByHeight);
+        fontSize = Math.max(9, Math.round(fontSize));
+
+        const pctFontSize = Math.max(8, Math.round(fontSize * 0.82));
+        const pctFontWeight = Math.max(450, fontWeight - 120);
 
         return { fontSize, fontWeight, pctFontSize, pctFontWeight };
     }
