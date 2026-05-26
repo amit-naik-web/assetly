@@ -46,12 +46,19 @@
 
 .donut-hub-title {
   margin: 0;
-  font-size: clamp(0.65rem, 1.1vw, 0.8rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.05em;
+  font-size: clamp(0.78rem, 1.45vw, 0.95rem);
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--text-secondary);
   max-width: 100%;
+}
+
+.donut-hub-line {
+  display: block;
 }
 
 .legend {

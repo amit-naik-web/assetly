@@ -66,25 +66,46 @@
         (mouseenter)="onLeafHover(leaf)"
         (mouseleave)="onLeafHover(null)"
       >
-        <!-- Symbol text — only show if block is large enough -->
-        @if (leaf.width > 30 && leaf.height > 20) {
-          <span
-            class="leaf-symbol"
-            [style.fontSize.px]="leaf.fontSize"
-            [style.fontWeight]="leaf.fontWeight"
-          >
-            {{ leaf.symbol }}
-          </span>
-        }
-
-        @if (leaf.width > 40 && leaf.height > 36) {
-          <span
-            class="leaf-pct"
-            [style.fontSize.px]="leaf.pctFontSize"
-            [style.fontWeight]="leaf.pctFontWeight"
-          >
-            {{ leaf.dayChangePct >= 0 ? '+' : '' }}{{ leaf.dayChangePct.toFixed(2) }}%
-          </span>
+        @switch (leaf.labelLayout) {
+          @case ('stacked') {
+            <span
+              class="leaf-symbol"
+              [style.fontSize.px]="leaf.fontSize"
+              [style.fontWeight]="leaf.fontWeight"
+            >
+              {{ leaf.symbol }}
+            </span>
+            <span
+              class="leaf-pct"
+              [style.fontSize.px]="leaf.pctFontSize"
+              [style.fontWeight]="leaf.pctFontWeight"
+            >
+              {{ leaf.pctLabel }}
+            </span>
+          }
+          @case ('compact') {
+            <span
+              class="leaf-compact"
+              [style.fontSize.px]="leaf.fontSize"
+              [style.fontWeight]="leaf.fontWeight"
+            >
+              <span class="leaf-compact-symbol">{{ leaf.symbol }}</span>
+              <span
+                class="leaf-compact-pct"
+                [style.fontSize.px]="leaf.pctFontSize"
+                [style.fontWeight]="leaf.pctFontWeight"
+              >{{ leaf.pctLabel }}</span>
+            </span>
+          }
+          @case ('symbol-only') {
+            <span
+              class="leaf-symbol"
+              [style.fontSize.px]="leaf.fontSize"
+              [style.fontWeight]="leaf.fontWeight"
+            >
+              {{ leaf.symbol }}
+            </span>
+          }
         }
       </div>
     }
