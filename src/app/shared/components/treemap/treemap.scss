@@ -1,0 +1,197 @@
+.treemap-host {
+    position: relative;
+    width: 100%;
+    outline: none;
+    // border-radius: 8px;
+    overflow: hidden;
+    --treemap-bg: #0a0a0a;
+    --treemap-border: rgba(255, 255, 255, 0.12);
+    --treemap-header-text: rgba(255, 255, 255, 0.55);
+    --treemap-focus-gain: var(--gain, #0F6E56);
+    --treemap-focus-loss: var(--loss, #A32D2D);
+    background: var(--treemap-bg);
+
+    &.treemap--light {
+      --treemap-bg: var(--surface, #F4F3EE);
+      --treemap-border: var(--border, #D3D1C7);
+      --treemap-header-text: var(--text-secondary, #5F5E5A);
+    }
+  
+    &:focus-visible {
+      outline: 2px solid var(--text-primary, #2C2C2A);
+      outline-offset: 2px;
+    }
+  }
+  
+  .treemap-inner {
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Sector header band — sits on treemap background, above coloured tiles */
+  .sector-header {
+    position: absolute;
+    display: flex;
+    align-items: center;            // vertically center text in the band
+    padding: 0 4px;
+    background: var(--treemap-bg);  // MUST be opaque — covers any tile beneath
+    pointer-events: none;
+    z-index: 5;                     // above tiles and sector-frame
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  
+  .sector-header-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.80);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 16px;
+  
+    .treemap--light & {
+      color: rgba(0, 0, 0, 0.65);
+    }
+  }
+
+  .sector-frame {
+    position: absolute;
+    border: 1px solid var(--treemap-border);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Leaf block */
+  .leaf {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 2px;
+    transition: filter 0.12s, box-shadow 0.1s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  
+    &:hover,
+    &.leaf-hovered {
+      filter: brightness(1.15);
+      z-index: 3;
+    }
+  
+    &.leaf-focused {
+      z-index: 4;
+      filter: brightness(1.2);
+    }
+
+    &.leaf-focused.leaf-gain {
+      outline: none;
+      box-shadow:
+        inset 0 0 0 3px var(--treemap-focus-gain),
+        inset 0 0 0 4px rgba(255, 255, 255, 0.45);
+    }
+
+    &.leaf-focused.leaf-loss {
+      outline: none;
+      box-shadow:
+        inset 0 0 0 3px var(--treemap-focus-loss),
+        inset 0 0 0 4px rgba(255, 255, 255, 0.45);
+    }
+  }
+  
+  .leaf-symbol {
+    line-height: 1.1;
+    white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  .leaf-pct {
+    line-height: 1.1;
+    white-space: nowrap;
+    opacity: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* Accessible overlay — transparent buttons over visual blocks */
+  .a11y-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  
+  .a11y-leaf {
+    position: absolute;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: inherit;
+    pointer-events: none;
+    opacity: 0;
+    -webkit-tap-highlight-color: transparent;
+    outline: none !important;
+    box-shadow: none !important;
+
+    &:focus,
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  /* Tooltip */
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    background: var(--nav-bg, #0C2340);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 160px;
+    pointer-events: none;
+    z-index: 100;
+    font-size: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  
+  .tt-symbol {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+    margin-bottom: 2px;
+  }
+  
+  .tt-name {
+    font-size: 10px;
+    opacity: 0.6;
+    margin-bottom: 8px;
+  }
+  
+  .tt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 2px 0;
+  }
+  
+  .tt-label { opacity: 0.6; }
+  
+  .tt-val {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .tt-hint {
+    margin-top: 8px;
+    font-size: 10px;
+    opacity: 0.5;
+    text-align: center;
+  }
+  
+  .gain { color: #5DCAA5; }
+  .loss { color: #F09595; }

@@ -24,9 +24,10 @@ import {
   })
   export class DonutChart {
     data = input.required<AllocationSlice[]>();
+    layout = input<'inline' | 'stacked'>('inline');
   
-    readonly CIRCUMFERENCE = 2 * Math.PI * 40; // r=40
-  
+    readonly CIRCUMFERENCE = 2 * Math.PI * 38;
+
     readonly segments = computed<DonutSegment[]>(() => {
       let offset = 0;
       return this.data().map(slice => {
@@ -46,7 +47,7 @@ import {
     });
   
     readonly ariaLabel = computed(() =>
-      'Asset allocation: ' +
+      'Sector wise allocation: ' +
       this.data().map(s => `${s.label} ${s.pct}%`).join(', ')
     );
   }

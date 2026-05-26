@@ -60,6 +60,28 @@ export const PortfolioStore = signalStore(
       positions().filter(p => p.dayChangePct < 0).length
     ),
 
+    holdingsCount: computed(() => positions().length),
+
+    netDayChange: computed(() =>
+      positions().reduce((sum, p) => sum + p.shares * p.dayChange, 0)
+    ),
+
+    dayReturnPct: computed(() => {
+      const list = positions();
+      const value = list.reduce((s, p) => s + p.shares * p.currentPrice, 0);
+      const net = list.reduce((s, p) => s + p.shares * p.dayChange, 0);
+      const prior = value - net;
+      return prior > 0 ? (net / prior) * 100 : 0;
+    }),
+
+    totalReturnPct: computed(() => {
+      const list = positions();
+      const cost = list.reduce((s, p) => s + p.shares * p.avgCost, 0);
+      if (cost === 0) return 0;
+      const value = list.reduce((s, p) => s + p.shares * p.currentPrice, 0);
+      return ((value - cost) / cost) * 100;
+    }),
+
     allocation: computed(() => {
       const total = positions().reduce((s, p) => s + p.shares * p.currentPrice, 0);
       const sectors: Record<string, number> = {};

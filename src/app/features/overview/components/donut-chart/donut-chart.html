@@ -1,74 +1,47 @@
-<div class="donut-wrap">
+<div
+  class="donut-wrap"
+  [class.donut-wrap--stacked]="layout() === 'stacked'"
+>
 
-    <!-- SVG Donut -->
+  <div class="donut-stage">
     <svg
+      class="donut-chart"
       viewBox="0 0 100 100"
-      width="120"
-      height="120"
       role="img"
       [attr.aria-label]="ariaLabel()"
     >
       <title>Asset allocation donut chart</title>
-  
+
       @for (seg of segments(); track seg.label) {
         <circle
-          cx="50" cy="50" r="40"
+          cx="50" cy="50" r="38"
           fill="none"
           [attr.stroke]="seg.color"
-          stroke-width="18"
+          stroke-width="24"
           [attr.stroke-dasharray]="seg.dash + ' ' + seg.gap"
           [attr.stroke-dashoffset]="-seg.offset"
           transform="rotate(-90 50 50)"
         />
       }
-  
-      <!-- Center label -->
-      <text x="50" y="46" text-anchor="middle"
-            font-size="8" fill="#5F5E5A" font-family="sans-serif">
-        Allocation
-      </text>
-      <text x="50" y="57" text-anchor="middle"
-            font-size="10" fill="#2C2C2A" font-weight="bold"
-            font-family="sans-serif">
-        {{ data().length }} sectors
-      </text>
     </svg>
-  
-    <!-- Legend -->
-    <ul class="legend" aria-label="Allocation legend">
-      @for (slice of data(); track slice.label) {
-        <li class="legend-item">
-          <span
-            class="legend-dot"
-            [style.background]="slice.color"
-            aria-hidden="true"
-          ></span>
-          <span class="legend-label">{{ slice.label }}</span>
-          <span class="legend-pct">{{ slice.pct }}%</span>
-        </li>
-      }
-    </ul>
-  
+
+    <div class="donut-hub" aria-hidden="true">
+      <p class="donut-hub-title">Sector wise Allocation</p>
+    </div>
   </div>
-  
-  <!-- Accessible data table alternative -->
-  <details class="data-table-toggle">
-    <summary>View allocation data table</summary>
-    <table aria-label="Asset allocation breakdown">
-      <caption class="sr-only">Asset allocation by sector</caption>
-      <thead>
-        <tr>
-          <th scope="col">Sector</th>
-          <th scope="col">Allocation</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (slice of data(); track slice.label) {
-          <tr>
-            <td>{{ slice.label }}</td>
-            <td>{{ slice.pct }}%</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </details>
+
+  <ul class="legend" aria-label="Allocation legend">
+    @for (slice of data(); track slice.label) {
+      <li class="legend-item">
+        <span
+          class="legend-dot"
+          [style.background]="slice.color"
+          aria-hidden="true"
+        ></span>
+        <span class="legend-label">{{ slice.label }}</span>
+        <span class="legend-pct">{{ slice.pct }}%</span>
+      </li>
+    }
+  </ul>
+
+</div>

@@ -1,129 +1,529 @@
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  
-  .loading-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  
-  .skeleton-card {
-    height: 120px;
-    background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
-    background-size: 200% 100%;
-    border-radius: 10px;
-    animation: shimmer 1.5s infinite;
-  }
-  
-  @keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-  
-  .summary-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: #ffffff;
-    border: 0.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 13px;
-    width: fit-content;
-  }
-  
-  .summary-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  
-  .summary-sep {
-    color: var(--border);
-  }
-  
-  .dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    &.dot-up   { background: var(--gain); }
-    &.dot-down { background: var(--loss); }
-  }
-  
-  .gain { color: var(--gain); font-weight: 500; }
-  .loss { color: var(--loss); font-weight: 500; }
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
 
-  .donut-section {
-    margin-top: 20px;
-    background: #ffffff;
-    border: 0.5px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
+// ── Light theme tokens (overview screen) ──────────────
+.overview-shell {
+  --ov-bg: #ffffff;
+  --ov-surface: var(--surface, #F4F3EE);
+  --ov-border: var(--border, #D3D1C7);
+  --ov-text: var(--text-primary, #2C2C2A);
+  --ov-text-muted: var(--text-secondary, #5F5E5A);
+  --ov-text-faint: #8A8780;
+  --ov-gain: var(--gain, #0F6E56);
+  --ov-loss: var(--loss, #A32D2D);
+  --ov-brand: var(--brand, #185FA5);
+  --ov-treemap-bg: #F8F7F4;
+  --ov-card-bg: #ffffff;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) minmax(280px, 1.35fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: 0;
+  row-gap: 1px;
+  background: var(--ov-border);
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--ov-border);
+}
+
+// ── KPI cells ─────────────────────────────────────────
+.kpi-cell {
+  background: var(--ov-card-bg);
+  min-width: 0;
+}
+
+.portfolio-header {
+  grid-column: 1 / 5;
+  grid-row: 1;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--ov-card-bg);
+}
+
+.kpi-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  flex: 1 1 auto;
+  min-height: 112px;
+  align-items: stretch;
+  border-bottom: 2px solid var(--ov-border);
+}
+
+.kpi-cell--metric {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+  height: 100%;
+  border-right: 1px solid var(--ov-border);
+
+  &:last-child {
+    border-right: none;
   }
-  
-  .section-title {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 14px;
+}
+
+.kpi-cell--metric .kpi-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: var(--ov-text-muted);
+}
+
+.kpi-cell--metric .kpi-value {
+  margin: 0;
+  width: 100%;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ov-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.kpi-gain { color: var(--ov-gain); }
+  &.kpi-loss { color: var(--ov-loss); }
+}
+
+.kpi-cell--metric .kpi-sub {
+  margin: 0;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ov-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Loading skeletons ─────────────────────────────────
+.kpi-skeleton-cell {
+  background: var(--ov-card-bg);
+  animation: light-shimmer 1.5s infinite;
+}
+
+.kpi-skeleton-cell--metric {
+  min-height: 112px;
+}
+
+.portfolio-header--skeleton {
+  .kpi-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
   }
-  
-  .donut-placeholder {
-    height: 120px;
-    background: var(--surface);
-    border-radius: 8px;
+
+  .treemap-toolbar--skeleton {
+    min-height: 48px;
+    background: var(--ov-surface);
+    animation: light-shimmer 1.5s infinite;
   }
-  
-  .skeleton-donut {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  .skeleton-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    flex-shrink: 0;
-  }
-  
-  .skeleton-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+}
+
+.treemap-zone {
+  grid-column: 1 / 5;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ov-treemap-bg);
+  overflow: hidden;
+}
+
+.treemap-zone--skeleton {
+  .treemap-loading {
     flex: 1;
+    min-height: 0;
   }
-  
-  .skeleton-row {
-    height: 12px;
-    border-radius: 4px;
-    background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    width: 80%;
+}
+
+.market-today--skeleton {
+  grid-column: 1 / 5;
+  grid-row: 3;
+  min-height: 52px;
+  background: var(--ov-surface);
+}
+
+@keyframes light-shimmer {
+  0%, 100% { background: var(--ov-card-bg); }
+  50%       { background: var(--ov-surface); }
+}
+
+// ── Treemap zone (cols 1–4, flex fill) ────────────────
+.portfolio-header .treemap-toolbar {
+  border-bottom: none;
+}
+
+.treemap-toolbar {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  min-width: 0;
+  background: var(--ov-card-bg);
+  border-bottom: 1px solid var(--ov-border);
+}
+
+.treemap-toolbar-heading {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--ov-surface);
+  border-right: 1px solid var(--ov-border);
+  flex-shrink: 0;
+}
+
+.treemap-toolbar-label {
+  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+  font-weight: 700;
+  color: var(--ov-text-muted);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.sector-filter {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.sector-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 8px 14px;
+  flex-shrink: 0;
+  border: none;
+  border-right: 1px solid var(--ov-border);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    background: var(--ov-surface);
   }
-  
-  .error-msg {
+
+  &:focus-visible {
+    outline: 2px solid var(--ov-brand);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+}
+
+.sector-tab--active {
+  background: var(--ov-surface);
+  box-shadow: inset 0 -2px 0 var(--ov-brand);
+
+  .sector-tab__label {
+    color: var(--ov-brand);
+  }
+}
+
+.sector-tab__label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ov-text);
+  white-space: nowrap;
+}
+
+.sector-tab__delta {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.treemap-hero {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 220px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.market-today {
+  grid-column: 1 / 5;
+  grid-row: 3;
+  display: flex;
+  align-items: stretch;
+  background: var(--ov-card-bg);
+  border-top: 2px solid var(--ov-border);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.market-today-heading {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--ov-surface);
+  border-right: 1px solid var(--ov-border);
+  flex-shrink: 0;
+}
+
+.market-today-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ov-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.indices-list {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.index-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  min-width: 0;
+  border-right: 1px solid var(--ov-border);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.index-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ov-text-muted);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.index-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ov-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.index-change {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+// ── Allocation panel (col 5, full height) ─────────────
+.allocation-panel {
+  grid-column: 5;
+  grid-row: 1 / -1;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  background: var(--ov-card-bg);
+  border-left: 2px solid var(--ov-border);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.allocation-header {
+  flex-shrink: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ov-border);
+}
+
+.allocation-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.allocation-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: var(--ov-text-muted);
+}
+
+.allocation-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 700;
+  color: var(--ov-text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.allocation-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+
+  ::ng-deep app-donut-chart {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    display: flex;
+  }
+
+  ::ng-deep app-donut-chart .legend-label {
+    color: var(--ov-text-muted);
+  }
+
+  ::ng-deep app-donut-chart .legend-pct {
+    color: var(--ov-text);
+  }
+
+  ::ng-deep app-donut-chart .legend-item + .legend-item {
+    border-top-color: var(--ov-border);
+  }
+
+  ::ng-deep app-donut-chart .donut-hub-title {
+    color: var(--ov-text-muted);
+  }
+}
+
+.allocation-skeleton {
+  border-radius: 8px;
+  background: var(--ov-surface);
+  animation: light-shimmer 1.5s infinite;
+}
+
+.allocation-skeleton--header {
+  flex-shrink: 0;
+  height: 72px;
+}
+
+.allocation-skeleton--chart {
+  flex: 1 1 auto;
+  min-height: 120px;
+}
+
+.allocation-panel--skeleton {
+  gap: 14px;
+}
+
+.treemap-loading,
+.treemap-placeholder {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: var(--ov-treemap-bg);
+  animation: light-shimmer 1.5s infinite;
+}
+
+.treemap-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--ov-loss);
+  font-size: 13px;
+  background: var(--ov-treemap-bg);
+
+  button {
+    color: var(--ov-brand);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
     font-size: 13px;
-    color: var(--loss);
-  
-    button {
-      margin-left: 8px;
-      color: var(--brand);
-      background: none;
-      border: none;
-      cursor: pointer;
-      text-decoration: underline;
-      font-size: 13px;
-    }
   }
+}
+
+// ── Shared colour utils ───────────────────────────────
+.gain { color: var(--ov-gain); }
+.loss { color: var(--ov-loss); }
+
+// ── Treemap light overrides (inside overview) ─────────
+.overview-shell ::ng-deep app-treemap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .treemap-host {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    --treemap-bg: var(--ov-treemap-bg);
+    background: var(--ov-treemap-bg);
+  }
+
+  .sector-header-label {
+    color: var(--ov-text-muted);
+  }
+
+  .leaf.leaf-focused.leaf-gain {
+    box-shadow: inset 0 0 0 3px var(--ov-gain);
+  }
+
+  .leaf.leaf-focused.leaf-loss {
+    box-shadow: inset 0 0 0 3px var(--ov-loss);
+  }
+
+  .a11y-leaf:focus,
+  .a11y-leaf:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .tooltip {
+    background: var(--ov-card-bg);
+    color: var(--ov-text);
+    border: 1px solid var(--ov-border);
+    box-shadow: 0 4px 16px rgba(44, 44, 42, 0.12);
+  }
+
+  .tt-name,
+  .tt-label,
+  .tt-hint {
+    opacity: 1;
+    color: var(--ov-text-muted);
+  }
+
+  .gain { color: var(--ov-gain); }
+  .loss { color: var(--ov-loss); }
+}
