@@ -1,26 +1,62 @@
-<!-- Search and export bar -->
-<div class="toolbar" role="search">
+<div class="holdings-toolbar" role="search">
+  <div class="holdings-toolbar-heading">
+    <span class="holdings-toolbar-label" id="holdings-table-toolbar-label">POSITIONS</span>
+  </div>
+
+  <div class="holdings-toolbar-body" aria-labelledby="holdings-table-toolbar-label">
     <label for="holdings-search" class="sr-only">
       Search holdings by symbol, company or sector
     </label>
-    <div class="search-wrap">
-      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <div class="search-wrap" [class.search-wrap--has-value]="hasSearch()">
+      <svg
+        class="search-icon"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
       <input
         id="holdings-search"
-        type="search"
+        type="text"
+        role="searchbox"
         class="search-input"
         placeholder="Search symbol, company or sector…"
+        autocomplete="off"
+        spellcheck="false"
         [value]="searchQuery()"
         (input)="searchQuery.set($any($event.target).value)"
         [attr.aria-controls]="'holdings-table'"
         aria-label="Search holdings"
       />
+      @if (hasSearch()) {
+        <button
+          type="button"
+          class="search-clear"
+          aria-label="Clear search"
+          (click)="clearSearch()"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      }
     </div>
-  
+
     <div
       class="stats-chips"
       role="status"
@@ -36,6 +72,7 @@
       <span class="chip loss-chip">▼ {{ stats().losers }}</span>
     </div>
   </div>
+</div>
   
   <!-- Virtual scroll table wrapper -->
   <div class="table-wrap">
@@ -184,7 +221,13 @@
             </td>
             <td class="col-name">{{ row.companyName }}</td>
             <td class="col-sector">
-              <span class="sector-tag">{{ row.sector }}</span>
+              <span
+                class="sector-tag"
+                [style.--sector-color]="sectorColor(row.sector)"
+              >
+                <span class="sector-tag__dot" aria-hidden="true"></span>
+                {{ row.sector }}
+              </span>
             </td>
             <td class="col-num r">{{ row.shares | number }}</td>
             <td class="col-num r">${{ row.avgCost | number:'1.2-2' }}</td>

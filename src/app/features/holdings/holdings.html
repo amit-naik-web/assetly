@@ -1,24 +1,64 @@
-<section aria-labelledby="holdings-heading">
-    <h2 id="holdings-heading" class="sr-only">Holdings table</h2>
-  
-    <div class="page-header">
-      <h3 class="page-title">Holdings</h3>
-      <span class="page-subtitle">
-        {{ rows().length }} positions
-      </span>
-    </div>
-  
-    @if (loading()) {
-      <div class="skeleton-table" aria-busy="true"
-           aria-label="Loading holdings data">
-        @for (i of [1,2,3,4,5,6]; track i) {
-          <div class="skeleton-row"></div>
+<section class="holdings-shell" aria-labelledby="holdings-heading">
+  <h2 id="holdings-heading" class="sr-only">Portfolio holdings</h2>
+
+  @if (!loading()) {
+    <div class="holdings-header">
+      <div class="kpi-metrics" role="list" aria-label="Holdings key metrics">
+        @for (kpi of kpis(); track kpi.id) {
+          <div
+            class="kpi-cell kpi-cell--metric"
+            role="listitem"
+            [attr.aria-label]="kpi.label + ': ' + formatKpiValue(kpi) + ', ' + kpi.changeLabel"
+          >
+            <p class="kpi-label">{{ kpi.label }}</p>
+            <p
+              class="kpi-value"
+              [ngClass]="{
+                'kpi-gain': kpi.trend === 'up',
+                'kpi-loss': kpi.trend === 'down'
+              }"
+            >
+              {{ formatKpiValue(kpi) }}
+            </p>
+            <p
+              class="kpi-sub"
+              [ngClass]="{
+                'gain': kpi.trend === 'up',
+                'loss': kpi.trend === 'down'
+              }"
+            >
+              @if (kpi.trend === 'neutral') {
+                {{ kpi.changeLabel }}
+              } @else {
+                {{ kpi.trend === 'up' ? '↑' : '↓' }} {{ kpi.changeLabel }}
+              }
+            </p>
+          </div>
         }
       </div>
-    }
-  
-    @if (!loading()) {
+    </div>
+
+    <div class="holdings-table-zone">
       <app-holdings-table [rows]="rows()" />
-    }
-  
-  </section>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="holdings-header holdings-header--skeleton" aria-hidden="true">
+      <div class="kpi-metrics">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="kpi-skeleton-cell kpi-skeleton-cell--metric"></div>
+        }
+      </div>
+    </div>
+    <div
+      class="holdings-table-zone holdings-table-zone--skeleton"
+      aria-busy="true"
+      aria-label="Loading holdings data"
+    >
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <div class="table-skeleton-row" aria-hidden="true"></div>
+      }
+    </div>
+  }
+</section>
