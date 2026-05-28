@@ -1,24 +1,59 @@
-<section aria-labelledby="alerts-heading">
-    <h2 id="alerts-heading" class="sr-only">Alerts and watchlist</h2>
-  
-    <div class="page-header">
-      <h3 class="page-title">Alerts</h3>
+<section class="alerts-shell" aria-labelledby="alerts-heading">
+  <h2 id="alerts-heading" class="sr-only">Alerts and watchlist</h2>
+
+  <header class="alerts-header">
+    <div class="alerts-title-row">
+      <h3 class="alerts-title">Alerts</h3>
     </div>
-  
-    <div class="alerts-layout">
-  
-      <!-- Left — builder + list -->
-      <div class="left-col">
-        <app-alert-builder (alertCreated)="onAlertCreated($event)" />
-        <div style="margin-top: 16px">
+
+    <div class="kpi-metrics" role="list" aria-label="Alert key metrics">
+      @for (kpi of kpis(); track kpi.id) {
+        <article class="kpi-cell" role="listitem" [attr.aria-label]="kpi.label + ': ' + kpi.value + ', ' + kpi.sub">
+          <p class="kpi-label">{{ kpi.label }}</p>
+          <p
+            class="kpi-value"
+            [class.kpi-gain]="kpi.trend === 'up'"
+            [class.kpi-loss]="kpi.trend === 'down'"
+          >
+            {{ kpi.value }}
+          </p>
+          <p class="kpi-sub">{{ kpi.sub }}</p>
+        </article>
+      }
+    </div>
+  </header>
+
+  <div class="alerts-layout">
+    <div class="left-col">
+      <section class="section-card">
+        <header class="section-hdr">
+          <span class="section-title">Create alert</span>
+        </header>
+        <div class="section-body">
+          <app-alert-builder (alertCreated)="onAlertCreated($event)" />
+        </div>
+      </section>
+
+      <section class="section-card">
+        <header class="section-hdr">
+          <span class="section-title">Active alerts</span>
+          <span class="section-badge">{{ store.entities().length }} total</span>
+        </header>
+        <div class="section-body">
           <app-alert-list />
         </div>
-      </div>
-  
-      <!-- Right — watchlist -->
-      <div class="right-col">
-        <app-watchlist />
-      </div>
-  
+      </section>
     </div>
-  </section>
+
+    <aside class="right-col">
+      <section class="section-card section-card--watchlist">
+        <header class="section-hdr">
+          <span class="section-title">Watchlist</span>
+        </header>
+        <div class="section-body section-body--watchlist">
+          <app-watchlist />
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>

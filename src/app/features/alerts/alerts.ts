@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   inject,
   OnInit,
+  computed,
 } from '@angular/core';
 import { AlertsStore } from './store/alerts.store';
 import { AlertBuilder } from './components/alert-builder/alert-builder';
@@ -10,8 +11,6 @@ import { AlertList } from './components/alert-list/alert-list';
 import { Watchlist } from './components/watchlist/watchlist';
 import {
   Alert,
-  MOCK_PRICES,
-  CONDITION_LABELS,
 } from './models/alert.model';
 
 @Component({
@@ -23,7 +22,27 @@ import {
   styleUrl: './alerts.scss',
 })
 export class Alerts implements OnInit {
-  private store = inject(AlertsStore);
+  readonly store = inject(AlertsStore);
+
+  readonly kpis = computed(() => {
+    type KpiTrend = 'up' | 'down' | 'neutral';
+    const entities = this.store.entities();
+    const watching = this.store.watching().length;
+    const triggered = this.store.triggeredCount();
+    const emailEnabled = entities.filter(a => a.notifyVia === 'EMAIL' || a.notifyVia === 'BOTH').length;
+    const avgProgress = watching > 0
+      ? Math.round(
+        this.store.watching().reduce((sum, alert) => sum + alert.progressPct, 0) / watching,
+      )
+      : 0;
+
+    return [
+      { id: 'active-alerts', label: 'Active alerts', value: String(entities.length), sub: `${watching} watching`, trend: 'neutral' as KpiTrend },
+      { id: 'triggered-today', label: 'Triggered', value: String(triggered), sub: triggered > 0 ? 'Needs review' : 'All clear', trend: (triggered > 0 ? 'up' : 'neutral') as KpiTrend },
+      { id: 'avg-progress', label: 'Avg progress', value: `${avgProgress}%`, sub: 'Towards targets', trend: 'neutral' as KpiTrend },
+      { id: 'email-enabled', label: 'Email alerts', value: String(emailEnabled), sub: 'Delivery enabled', trend: 'neutral' as KpiTrend },
+    ];
+  });
 
   ngOnInit() {
     // Seed with mock alerts
@@ -78,6 +97,6 @@ export class Alerts implements OnInit {
   }
 
   onAlertCreated(alert: Alert) {
-    console.log('Alert created:', alert);
+    void alert;
   }
 }
