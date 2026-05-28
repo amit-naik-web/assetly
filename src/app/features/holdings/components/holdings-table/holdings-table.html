@@ -90,21 +90,6 @@
   
       <thead>
         <tr>
-          <!-- Symbol -->
-          <th scope="col" class="col-sym"
-              [attr.aria-sort]="getAriaSortValue('symbol')">
-            <button class="sort-btn"
-                    (click)="sort('symbol')"
-                    [attr.aria-label]="getSortAriaLabel('symbol', 'Symbol')">
-              Symbol
-              <span class="sort-icon" aria-hidden="true">
-                @if (sortColumn() === 'symbol' && sortDir() === 'asc')  { ↑ }
-                @if (sortColumn() === 'symbol' && sortDir() === 'desc') { ↓ }
-                @if (sortColumn() !== 'symbol' || sortDir() === 'none') { ↕ }
-              </span>
-            </button>
-          </th>
-  
           <!-- Company -->
           <th scope="col" class="col-name"
               [attr.aria-sort]="getAriaSortValue('companyName')">
@@ -119,6 +104,11 @@
               </span>
             </button>
           </th>
+
+          <!-- Day mini chart -->
+          <th scope="col" class="col-mini" aria-label="1D trend">
+            <span class="sort-btn col-mini-label" aria-hidden="true">1D Trend</span>
+          </th>
   
           <!-- Sector -->
           <th scope="col" class="col-sector"
@@ -132,9 +122,9 @@
           </th>
   
           <!-- Shares -->
-          <th scope="col" class="col-num r"
+          <th scope="col" class="col-num"
               [attr.aria-sort]="getAriaSortValue('shares')">
-            <button class="sort-btn r"
+            <button class="sort-btn"
                     (click)="sort('shares')"
                     [attr.aria-label]="getSortAriaLabel('shares', 'Shares')">
               Shares
@@ -143,9 +133,9 @@
           </th>
   
           <!-- Avg Cost -->
-          <th scope="col" class="col-num r"
+          <th scope="col" class="col-num"
               [attr.aria-sort]="getAriaSortValue('avgCost')">
-            <button class="sort-btn r"
+            <button class="sort-btn"
                     (click)="sort('avgCost')"
                     [attr.aria-label]="getSortAriaLabel('avgCost', 'Average cost')">
               Avg cost
@@ -153,32 +143,10 @@
             </button>
           </th>
   
-          <!-- Price -->
-          <th scope="col" class="col-num r"
-              [attr.aria-sort]="getAriaSortValue('currentPrice')">
-            <button class="sort-btn r"
-                    (click)="sort('currentPrice')"
-                    [attr.aria-label]="getSortAriaLabel('currentPrice', 'Current price')">
-              Price
-              <span class="sort-icon" aria-hidden="true">↕</span>
-            </button>
-          </th>
-  
-          <!-- Day change -->
-          <th scope="col" class="col-num r"
-              [attr.aria-sort]="getAriaSortValue('dayChangePct')">
-            <button class="sort-btn r"
-                    (click)="sort('dayChangePct')"
-                    [attr.aria-label]="getSortAriaLabel('dayChangePct', 'Day change percent')">
-              Day chg
-              <span class="sort-icon" aria-hidden="true">↕</span>
-            </button>
-          </th>
-  
           <!-- Total gain -->
-          <th scope="col" class="col-num r"
+          <th scope="col" class="col-num"
               [attr.aria-sort]="getAriaSortValue('totalGain')">
-            <button class="sort-btn r"
+            <button class="sort-btn"
                     (click)="sort('totalGain')"
                     [attr.aria-label]="getSortAriaLabel('totalGain', 'Total gain or loss')">
               Gain/loss
@@ -187,9 +155,9 @@
           </th>
   
           <!-- Total value -->
-          <th scope="col" class="col-num r"
+          <th scope="col" class="col-num"
               [attr.aria-sort]="getAriaSortValue('totalValue')">
-            <button class="sort-btn r"
+            <button class="sort-btn"
                     (click)="sort('totalValue')"
                     [attr.aria-label]="getSortAriaLabel('totalValue', 'Total value')">
               Value
@@ -216,10 +184,33 @@
               'row-loss': row.dayChangePct < 0
             }"
           >
-            <td class="col-sym">
-              <span class="sym-badge">{{ row.symbol }}</span>
+            <td class="col-name">
+              <div class="company-cell">
+                <div class="company-top-row">
+                  <span class="company-name">{{ row.companyName }}</span>
+                  <span class="company-day-change" [ngClass]="row.dayChangePct >= 0 ? 'gain' : 'loss'">
+                    <span aria-hidden="true">{{ row.dayChangePct >= 0 ? '▲' : '▼' }}</span>
+                    {{ Math.abs(row.dayChangePct) | number:'1.2-2' }}%
+                  </span>
+                </div>
+                <span class="company-symbol">{{ row.symbol }}</span>
+              </div>
             </td>
-            <td class="col-name">{{ row.companyName }}</td>
+            <td class="col-mini">
+              <svg
+                class="mini-chart"
+                viewBox="0 0 64 24"
+                role="img"
+                [attr.aria-label]="row.symbol + ' day trend ' + (row.dayChangePct >= 0 ? 'up' : 'down') + ' ' + Math.abs(row.dayChangePct).toFixed(2) + ' percent'"
+              >
+                <line class="mini-chart-baseline" x1="0" y1="12" x2="64" y2="12"></line>
+                <polyline
+                  class="mini-chart-line"
+                  [ngClass]="row.dayChangePct >= 0 ? 'gain' : 'loss'"
+                  [attr.points]="getMiniChartPoints(row)"
+                ></polyline>
+              </svg>
+            </td>
             <td class="col-sector">
               <span
                 class="sector-tag"
@@ -229,29 +220,24 @@
                 {{ row.sector }}
               </span>
             </td>
-            <td class="col-num r">{{ row.shares | number }}</td>
-            <td class="col-num r">${{ row.avgCost | number:'1.2-2' }}</td>
-            <td class="col-num r">${{ row.currentPrice | number:'1.2-2' }}</td>
-            <td class="col-num r"
-                [ngClass]="row.dayChangePct >= 0 ? 'gain' : 'loss'">
-              <span aria-hidden="true">
-                {{ row.dayChangePct >= 0 ? '▲' : '▼' }}
-              </span>
-              {{ Math.abs(row.dayChangePct) | number:'1.2-2' }}%
-            </td>
-            <td class="col-num r"
+            <td class="col-num">{{ row.shares | number }}</td>
+            <td class="col-num">${{ row.avgCost | number:'1.2-2' }}</td>
+            <td class="col-num"
                 [ngClass]="row.totalGain >= 0 ? 'gain' : 'loss'">
               {{ row.totalGain >= 0 ? '+' : '' }}${{ row.totalGain | number:'1.0-0' }}
             </td>
-            <td class="col-num r">
-              ${{ row.totalValue | number:'1.0-0' }}
+            <td class="col-num">
+              <div class="value-cell">
+                <span>${{ row.totalValue | number:'1.0-0' }}</span>
+                <span class="value-price">Price: ${{ row.currentPrice | number:'1.2-2' }}</span>
+              </div>
             </td>
           </tr>
         }
   
         @empty {
           <tr>
-            <td colspan="9" class="empty-row" role="status">
+            <td colspan="7" class="empty-row" role="status">
               No positions match "{{ searchQuery() }}"
             </td>
           </tr>
