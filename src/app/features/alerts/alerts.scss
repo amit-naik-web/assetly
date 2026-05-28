@@ -1,17 +1,190 @@
-.page-header {
-    margin-bottom: 16px;
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.alerts-shell {
+  --al-surface: var(--surface, #f4f3ee);
+  --al-border: var(--border, #d3d1c7);
+  --al-text: var(--text-primary, #2c2c2a);
+  --al-text-muted: var(--text-secondary, #5f5e5a);
+  --al-gain: var(--gain, #0f6e56);
+  --al-loss: var(--loss, #a32d2d);
+  --al-brand: var(--brand, #185fa5);
+  --al-card-bg: #ffffff;
+
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  row-gap: 1px;
+  background: var(--al-border);
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--al-border);
+}
+
+.alerts-header {
+  background: var(--al-card-bg);
+}
+
+.alerts-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--al-border);
+}
+
+.alerts-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--al-text);
+  font-weight: 700;
+}
+
+.kpi-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  min-height: 106px;
+  border-bottom: 2px solid var(--al-border);
+}
+
+.kpi-cell {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  border-right: 1px solid var(--al-border);
+
+  &:last-child {
+    border-right: none;
   }
-  
-  .page-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.3px;
-  }
-  
-  .alerts-layout {
-    display: grid;
-    grid-template-columns: 1fr 260px;
-    gap: 16px;
-    align-items: start;
-  }
+}
+
+.kpi-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--al-text-muted);
+}
+
+.kpi-value {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--al-text);
+  font-variant-numeric: tabular-nums;
+
+  &.kpi-gain { color: var(--al-gain); }
+  &.kpi-loss { color: var(--al-loss); }
+}
+
+.kpi-sub {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--al-text-muted);
+}
+
+.alerts-layout {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr;
+  gap: 1px;
+  min-height: 0;
+  background: var(--al-border);
+}
+
+.left-col {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1px;
+  background: var(--al-border);
+}
+
+.right-col {
+  min-width: 0;
+  min-height: 0;
+  background: var(--al-card-bg);
+}
+
+.section-card {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--al-card-bg);
+}
+
+.section-card--watchlist {
+  height: 100%;
+}
+
+.section-hdr {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--al-border);
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--al-text-muted);
+}
+
+.section-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--al-text-muted);
+  background: var(--al-surface);
+  border: 1px solid var(--al-border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  line-height: 1.1;
+}
+
+.section-body {
+  padding: 14px;
+  min-height: 0;
+}
+
+.section-body--watchlist {
+  height: 100%;
+}
+
+.alerts-shell ::ng-deep app-alert-builder .builder-card,
+.alerts-shell ::ng-deep app-alert-list .list-wrap,
+.alerts-shell ::ng-deep app-watchlist .watchlist-card {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.alerts-shell ::ng-deep app-alert-builder .card-title,
+.alerts-shell ::ng-deep app-watchlist .wl-header {
+  display: none;
+}
+
+.alerts-shell ::ng-deep app-alert-list .list-wrap,
+.alerts-shell ::ng-deep app-watchlist .watchlist-card {
+  height: 100%;
+}
