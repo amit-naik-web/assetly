@@ -1,4 +1,3 @@
-<!-- ARIA live region — screen readers announce price changes -->
 <div
   role="status"
   aria-live="polite"
@@ -9,98 +8,195 @@
   {{ announcement() }}
 </div>
 
-<!-- Stats summary -->
-<div class="stats-bar" role="status"
-     [attr.aria-label]="stats().gainers + ' gaining, ' + stats().losers + ' losing'">
-  <div class="stat">
-    <span class="stat-dot gain-dot" aria-hidden="true"></span>
-    <span class="gain">{{ stats().gainers }} gaining</span>
+<div class="prices-toolbar">
+  <div class="prices-toolbar-heading">
+    <span class="prices-toolbar-label" id="prices-table-toolbar-label">LIVE PRICES</span>
   </div>
-  <span class="stat-sep" aria-hidden="true">·</span>
-  <div class="stat">
-    <span class="stat-dot loss-dot" aria-hidden="true"></span>
-    <span class="loss">{{ stats().losers }} losing</span>
-  </div>
-  <span class="stat-sep" aria-hidden="true">·</span>
-  <div class="stat">
+
+  <div
+    class="prices-toolbar-body"
+    aria-labelledby="prices-table-toolbar-label"
+    role="status"
+    [attr.aria-label]="stats().gainers + ' gaining, ' + stats().losers + ' losing'"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <span class="chip">{{ symbolCount }} symbols</span>
+    <span class="chip gain-chip">▲ {{ stats().gainers }} gaining</span>
+    <span class="chip loss-chip">▼ {{ stats().losers }} losing</span>
     <span
-      [ngClass]="stats().avgChange >= 0 ? 'gain' : 'loss'"
+      class="chip"
+      [ngClass]="stats().avgChange >= 0 ? 'gain-chip' : 'loss-chip'"
     >
       Avg {{ stats().avgChange >= 0 ? '+' : '' }}{{ stats().avgChange.toFixed(2) }}%
     </span>
+    <span class="chip chip--muted">Updates every 1.5s</span>
   </div>
 </div>
 
-<!-- Price table -->
 <div class="table-wrap">
   <table
+    id="live-prices-table"
     class="price-table"
     aria-label="Live market prices, updating in real time"
     aria-live="off"
   >
     <caption class="sr-only">
-      Live prices for {{ symbols.length }} tracked symbols.
-      Updates every 1.5 seconds.
+      Live prices for {{ symbolCount }} tracked symbols. Updates every 1.5 seconds.
     </caption>
     <thead>
       <tr>
-        <th scope="col" class="col-symbol">Symbol</th>
+        <th scope="col" class="col-symbol" [attr.aria-sort]="getAriaSortValue('symbol')">
+          <button
+            type="button"
+            class="sort-btn"
+            (click)="sort('symbol')"
+            [attr.aria-label]="getSortAriaLabel('symbol', 'Symbol')"
+          >
+            Symbol
+            <span class="sort-icon" aria-hidden="true">
+              @if (sortColumn() === 'symbol' && sortDir() === 'asc') { ↑ }
+              @if (sortColumn() === 'symbol' && sortDir() === 'desc') { ↓ }
+              @if (sortColumn() !== 'symbol' || sortDir() === 'none') { ↕ }
+            </span>
+          </button>
+        </th>
         <th scope="col" class="col-name">Company</th>
-        <th scope="col" class="col-price">Price</th>
-        <th scope="col" class="col-change">Change</th>
-        <th scope="col" class="col-pct">%</th>
-        <th scope="col" class="col-vol">Volume</th>
+        <th scope="col" class="col-price r" [attr.aria-sort]="getAriaSortValue('price')">
+          <button
+            type="button"
+            class="sort-btn r"
+            (click)="sort('price')"
+            [attr.aria-label]="getSortAriaLabel('price', 'Price')"
+          >
+            Price
+            <span class="sort-icon" aria-hidden="true">
+              @if (sortColumn() === 'price' && sortDir() === 'asc') { ↑ }
+              @if (sortColumn() === 'price' && sortDir() === 'desc') { ↓ }
+              @if (sortColumn() !== 'price' || sortDir() === 'none') { ↕ }
+            </span>
+          </button>
+        </th>
+        <th scope="col" class="col-change r" [attr.aria-sort]="getAriaSortValue('change')">
+          <button
+            type="button"
+            class="sort-btn r"
+            (click)="sort('change')"
+            [attr.aria-label]="getSortAriaLabel('change', 'Change')"
+          >
+            Change
+            <span class="sort-icon" aria-hidden="true">
+              @if (sortColumn() === 'change' && sortDir() === 'asc') { ↑ }
+              @if (sortColumn() === 'change' && sortDir() === 'desc') { ↓ }
+              @if (sortColumn() !== 'change' || sortDir() === 'none') { ↕ }
+            </span>
+          </button>
+        </th>
+        <th scope="col" class="col-pct r" [attr.aria-sort]="getAriaSortValue('changePct')">
+          <button
+            type="button"
+            class="sort-btn r"
+            (click)="sort('changePct')"
+            [attr.aria-label]="getSortAriaLabel('changePct', 'Day change')"
+          >
+            Day chg
+            <span class="sort-icon" aria-hidden="true">
+              @if (sortColumn() === 'changePct' && sortDir() === 'asc') { ↑ }
+              @if (sortColumn() === 'changePct' && sortDir() === 'desc') { ↓ }
+              @if (sortColumn() !== 'changePct' || sortDir() === 'none') { ↕ }
+            </span>
+          </button>
+        </th>
+        <th scope="col" class="col-vol r" [attr.aria-sort]="getAriaSortValue('volume')">
+          <button
+            type="button"
+            class="sort-btn r"
+            (click)="sort('volume')"
+            [attr.aria-label]="getSortAriaLabel('volume', 'Volume')"
+          >
+            Volume
+            <span class="sort-icon" aria-hidden="true">
+              @if (sortColumn() === 'volume' && sortDir() === 'asc') { ↑ }
+              @if (sortColumn() === 'volume' && sortDir() === 'desc') { ↓ }
+              @if (sortColumn() !== 'volume' || sortDir() === 'none') { ↕ }
+            </span>
+          </button>
+        </th>
       </tr>
     </thead>
     <tbody>
-        @for (symbol of symbols; track symbol) {
-          @let tick = prices()[symbol];
-          <tr
+      @for (row of pagedRows(); track row.symbol) {
+        @let tick = row.tick;
+        <tr
+          [ngClass]="{
+            'row-up': (tick?.changePct ?? 0) > 0,
+            'row-down': (tick?.changePct ?? 0) < 0
+          }"
+          [attr.aria-label]="
+            row.symbol + ', ' +
+            row.companyName + ', $' +
+            (tick?.price?.toFixed(2) ?? '0') + ', ' +
+            ((tick?.changePct ?? 0) >= 0 ? 'up' : 'down') + ' ' +
+            (Math.abs(tick?.changePct ?? 0).toFixed(2)) + ' percent'
+          "
+        >
+          <td class="col-symbol">
+            <span class="symbol-badge">{{ row.symbol }}</span>
+          </td>
+          <td class="col-name">{{ row.companyName }}</td>
+          <td class="col-price r">${{ tick?.price?.toFixed(2) ?? '—' }}</td>
+          <td
+            class="col-change r"
             [ngClass]="{
-              'row-up':   (tick?.changePct ?? 0) > 0,
-              'row-down': (tick?.changePct ?? 0) < 0
+              'gain': (tick?.change ?? 0) >= 0,
+              'loss': (tick?.change ?? 0) < 0
             }"
-            [attr.aria-label]="
-              symbol + ', ' +
-              getCompanyName(symbol) + ', $' +
-              (tick?.price?.toFixed(2) ?? '0') + ', ' +
-              ((tick?.changePct ?? 0) >= 0 ? 'up' : 'down') + ' ' +
-              (Math.abs(tick?.changePct ?? 0).toFixed(2)) + ' percent'
-            "
           >
-            <td class="col-symbol">
-              <span class="symbol-badge">{{ symbol }}</span>
-            </td>
-            <td class="col-name">{{ getCompanyName(symbol) }}</td>
-            <td class="col-price">
-              ${{ tick?.price?.toFixed(2) ?? '—' }}
-            </td>
-            <td
-              class="col-change"
-              [ngClass]="{
-                'gain': (tick?.change ?? 0) >= 0,
-                'loss': (tick?.change ?? 0) < 0
-              }"
-            >
-              {{ (tick?.change ?? 0) >= 0 ? '+' : '' }}{{ tick?.change?.toFixed(2) ?? '—' }}
-            </td>
-            <td
-              class="col-pct"
-              [ngClass]="{
-                'gain': (tick?.changePct ?? 0) >= 0,
-                'loss': (tick?.changePct ?? 0) < 0
-              }"
-            >
-              <span aria-hidden="true">
-                {{ (tick?.changePct ?? 0) >= 0 ? '▲' : '▼' }}
-              </span>
-              {{ Math.abs(tick?.changePct ?? 0).toFixed(2) }}%
-            </td>
-            <td class="col-vol">
-              {{ formatVolume(tick?.volume ?? 0) }}
-            </td>
-          </tr>
-        }
-      </tbody>
+            {{ (tick?.change ?? 0) >= 0 ? '+' : '' }}{{ tick?.change?.toFixed(2) ?? '—' }}
+          </td>
+          <td
+            class="col-pct r"
+            [ngClass]="{
+              'gain': (tick?.changePct ?? 0) >= 0,
+              'loss': (tick?.changePct ?? 0) < 0
+            }"
+          >
+            <span aria-hidden="true">
+              {{ (tick?.changePct ?? 0) >= 0 ? '▲' : '▼' }}
+            </span>
+            {{ Math.abs(tick?.changePct ?? 0).toFixed(2) }}%
+          </td>
+          <td class="col-vol r">{{ formatVolume(tick?.volume ?? 0) }}</td>
+        </tr>
+      }
+    </tbody>
   </table>
+</div>
+
+<div
+  class="pagination-bar"
+  role="navigation"
+  aria-label="Live prices table pagination"
+>
+  <button
+    type="button"
+    class="page-btn"
+    (click)="prevPage()"
+    [disabled]="pageIndex() === 0"
+    aria-label="Go to previous page"
+  >
+    Previous
+  </button>
+  <span class="page-status" role="status" aria-live="polite">
+    Page {{ pageIndex() + 1 }} of {{ pageCount() }}
+  </span>
+  <button
+    type="button"
+    class="page-btn"
+    (click)="nextPage()"
+    [disabled]="pageIndex() >= pageCount() - 1"
+    aria-label="Go to next page"
+  >
+    Next
+  </button>
 </div>
