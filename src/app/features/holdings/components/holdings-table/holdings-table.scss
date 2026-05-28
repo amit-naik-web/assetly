@@ -199,8 +199,17 @@
     background: color-mix(in srgb, var(--ov-loss) 4%, var(--ov-card-bg));
   }
 
+  tbody tr[role='link'] {
+    cursor: pointer;
+  }
+
   tr:hover td {
     background: var(--ov-surface);
+  }
+
+  tbody tr[role='link']:focus-visible td {
+    outline: 2px solid var(--ov-brand);
+    outline-offset: -2px;
   }
 }
 

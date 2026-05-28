@@ -1,11 +1,13 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  inject,
   input,
   signal,
   computed,
 } from '@angular/core';
 import { NgClass, DecimalPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { getSectorColor } from '../../../../shared/sector-colors';
 import { HoldingRow, SortColumn, SortDir } from '../../models/holdings.model';
 
@@ -18,6 +20,8 @@ import { HoldingRow, SortColumn, SortDir } from '../../models/holdings.model';
   styleUrl: './holdings-table.scss',
 })
 export class HoldingsTable {
+  private readonly router = inject(Router);
+
   rows = input.required<HoldingRow[]>();
 
   readonly searchQuery = signal('');
@@ -119,4 +123,29 @@ export class HoldingsTable {
 
   readonly Math = Math;
   readonly sectorColor = getSectorColor;
+
+  openHoldingChart(row: HoldingRow): void {
+    void this.router.navigate(['/chart', row.symbol], {
+      queryParams: {
+        from: 'holdings',
+        symbol: row.symbol,
+        companyName: row.companyName,
+        sector: row.sector,
+        shares: row.shares,
+        avgCost: row.avgCost,
+        currentPrice: row.currentPrice,
+        dayChangePct: row.dayChangePct,
+        totalValue: row.totalValue,
+        totalGain: row.totalGain,
+        totalGainPct: row.totalGainPct,
+      },
+    });
+  }
+
+  onRowKeydown(event: KeyboardEvent, row: HoldingRow): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openHoldingChart(row);
+    }
+  }
 }
