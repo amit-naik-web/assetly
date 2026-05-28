@@ -10,7 +10,7 @@ export class ChartService {
   }
 
   private generateCandles(symbol: string, range: TimeRange): OhlcvCandle[] {
-    const days = { '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365 }[range];
+    const days = { '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365, All: 3650 }[range];
     const candles: OhlcvCandle[] = [];
     let price = BASE_PRICES[symbol] ?? 100;
 
