@@ -18,8 +18,7 @@
         <td>{{ rec.name }}</td>
         <td>{{ rec.date | date:'mediumDate' }}</td>
         <td>
-          <span class="format-badge"
-                [class.pdf-badge]="rec.format === 'PDF'">
+          <span class="format-badge">
             {{ rec.format }}
           </span>
         </td>
