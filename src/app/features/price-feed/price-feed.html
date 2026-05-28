@@ -1,52 +1,57 @@
-<section aria-labelledby="prices-heading">
-    <h2 id="prices-heading" class="sr-only">Live market prices</h2>
-  
-    <!-- Connection status -->
-    <div class="page-header">
-      <div class="page-title-row">
-        <h3 class="page-title">Market prices</h3>
+<section class="prices-shell" aria-labelledby="prices-heading">
+  <h2 id="prices-heading" class="sr-only">Live market prices</h2>
+
+  <div class="prices-header">
+    <div class="kpi-metrics" role="list" aria-label="Live prices key metrics">
+      @for (kpi of kpis(); track kpi.id) {
         <div
-          class="connection-status"
-          role="status"
-          [attr.aria-label]="connected() ? 'Live data connected' : 'Connecting...'"
+          class="kpi-cell kpi-cell--metric"
+          role="listitem"
+          [attr.aria-label]="kpi.label + ': ' + kpi.value + ', ' + kpi.changeLabel"
         >
-          <span
-            class="status-dot"
-            [class.dot-connected]="connected()"
-            [class.dot-connecting]="!connected()"
-            aria-hidden="true"
-          ></span>
-          <span class="status-text">
-            {{ connected() ? 'Live' : 'Connecting...' }}
-          </span>
+          <p class="kpi-label">{{ kpi.label }}</p>
+          <p
+            class="kpi-value"
+            [class.kpi-value--live]="kpi.live"
+            [ngClass]="{
+              'kpi-gain': kpi.trend === 'up' && !kpi.live,
+              'kpi-loss': kpi.trend === 'down'
+            }"
+          >
+            @if (kpi.live) {
+              <span class="live-dot" aria-hidden="true"></span>
+            }
+            {{ kpi.value }}
+          </p>
+          <p
+            class="kpi-sub"
+            [ngClass]="{
+              'gain': kpi.trend === 'up' && kpi.id !== 'feed-status',
+              'loss': kpi.trend === 'down' && kpi.id !== 'feed-status'
+            }"
+          >
+            @if (kpi.trend === 'neutral' || kpi.id === 'feed-status') {
+              {{ kpi.changeLabel }}
+            } @else {
+              {{ kpi.trend === 'up' ? '↑' : '↓' }} {{ kpi.changeLabel }}
+            }
+          </p>
         </div>
-      </div>
+      }
     </div>
-  
-    <!-- Price table -->
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-title">Top movers</span>
-        <span class="section-badge">Updates every 1.5s</span>
-      </div>
-      <app-price-table />
-    </div>
-  
-    <!-- Sector heatmap — deferred until visible -->
-    <div class="section-card" style="margin-top: 16px">
-      <div class="section-header">
-        <span class="section-title">Sector heatmap</span>
-        <span class="section-badge">S&amp;P 500</span>
-      </div>
-  
-      @defer (on viewport) {
+  </div>
+
+  <div class="prices-main-zone">
+    <div class="sector-heatmap-zone" role="region" aria-label="Sector performance heatmap">
+      @defer (on idle) {
         <app-sector-heatmap />
       } @placeholder {
         <div class="heatmap-placeholder" aria-hidden="true"></div>
-      } @loading {
-        <div class="heatmap-skeleton" aria-busy="true"
-             aria-label="Loading sector heatmap"></div>
+      } @loading (minimum 300ms) {
+        <div class="heatmap-skeleton" aria-busy="true" aria-label="Loading sector heatmap"></div>
       }
     </div>
-  
-  </section>
+
+    <app-price-table />
+  </div>
+</section>
