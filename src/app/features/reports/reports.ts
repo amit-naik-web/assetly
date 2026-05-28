@@ -4,7 +4,11 @@ import {
   inject,
   signal,
   OnInit,
+  DestroyRef,
+  Renderer2,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReportService } from './services/report.service';
 import { PerformanceChart } from './components/performance-chart/performance-chart';
 import { ExportHistory } from './components/export-history/export-history';
@@ -13,6 +17,14 @@ import {
   ReportTab, REPORT_TABS,
 } from './models/report.model';
 import { PortfolioStore } from '../overview/store/portfolio.store';
+import { Position } from '../overview/models/portfolio.model';
+
+interface ReportKpi {
+  id: string;
+  label: string;
+  value: string;
+  trend: 'up' | 'down' | 'neutral';
+}
 
 @Component({
   selector: 'app-reports',
@@ -23,30 +35,37 @@ import { PortfolioStore } from '../overview/store/portfolio.store';
   styleUrl: './reports.scss',
 })
 export class Reports implements OnInit {
-  private service = inject(ReportService);
-  private portfolioStore = inject(PortfolioStore);
+  private readonly service = inject(ReportService);
+  private readonly portfolioStore = inject(PortfolioStore);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly renderer = inject(Renderer2);
+  private readonly document = inject(DOCUMENT);
 
   readonly tabs = REPORT_TABS;
-  readonly activeTab  = signal<ReportTab>('performance');
-  readonly exporting  = signal(false);
+  readonly activeTab = signal<ReportTab>('performance');
+  readonly exporting = signal(false);
   readonly exportDone = signal(false);
 
-  readonly perfRows    = signal<PerformanceRow[]>([]);
+  readonly perfRows = signal<PerformanceRow[]>([]);
   readonly exportHistory = signal<ExportRecord[]>([]);
-  readonly loading     = signal(true);
+  readonly loading = signal(true);
 
-  readonly kpis = {
-    periodReturn: '+$12,841',
-    bestPosition: 'MSFT +11.2%',
-    worstPosition: 'TSLA -4.8%',
-  };
+  readonly kpis = signal<ReportKpi[]>([
+    { id: 'period-return', label: 'Period return', value: '+$12,841', trend: 'up' },
+    { id: 'best-position', label: 'Best position', value: 'MSFT +11.2%', trend: 'up' },
+    { id: 'worst-position', label: 'Worst position', value: 'TSLA -4.8%', trend: 'down' },
+  ]);
 
   ngOnInit() {
-    this.service.getPerformanceData().subscribe(rows => {
+    this.service.getPerformanceData().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(rows => {
       this.perfRows.set(rows);
       this.loading.set(false);
     });
-    this.service.getExportHistory().subscribe(records => {
+    this.service.getExportHistory().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(records => {
       this.exportHistory.set(records);
     });
   }
@@ -59,17 +78,21 @@ export class Reports implements OnInit {
     this.exporting.set(true);
     this.exportDone.set(false);
 
-    const positions = this.portfolioStore.positions().map((p: any) => ({
+    const positions = this.portfolioStore.positions().map((p: Position) => ({
       symbol: p.symbol,
       totalValue: p.shares * p.currentPrice,
     }));
 
-    this.service.exportCsv(positions).subscribe(blob => {
-      const url  = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href     = url;
-      link.download = `assetly-export-${Date.now()}.csv`;
+    this.service.exportCsv(positions).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(blob => {
+      const url = URL.createObjectURL(blob);
+      const link = this.renderer.createElement('a') as HTMLAnchorElement;
+      this.renderer.setAttribute(link, 'href', url);
+      this.renderer.setAttribute(link, 'download', `assetly-export-${Date.now()}.csv`);
+      this.renderer.appendChild(this.document.body, link);
       link.click();
+      this.renderer.removeChild(this.document.body, link);
       URL.revokeObjectURL(url);
 
       this.exporting.set(false);

@@ -1,48 +1,39 @@
-<section aria-labelledby="reports-heading">
-    <h2 id="reports-heading" class="sr-only">Reports and export</h2>
-  
-    <div class="page-header">
-      <h3 class="page-title">Reports</h3>
-      <div class="export-btns">
-        <button
-          class="export-btn"
-          (click)="exportCsv()"
-          [disabled]="exporting()"
-          [attr.aria-busy]="exporting() ? 'true' : null"
-          [attr.aria-label]="exporting() ? 'Exporting CSV, please wait' : 'Export portfolio as CSV'"
-        >
-          @if (exporting()) { Exporting… } @else { Export CSV }
-        </button>
-      </div>
+<section class="reports-shell" aria-labelledby="reports-heading">
+  <h2 id="reports-heading" class="sr-only">Reports and exports</h2>
+
+  <header class="reports-header">
+    <div class="reports-title-row">
+      <h3 class="reports-title">Reports</h3>
+      <button
+        type="button"
+        class="export-btn"
+        (click)="exportCsv()"
+        [disabled]="exporting()"
+        [attr.aria-busy]="exporting() ? 'true' : null"
+        [attr.aria-label]="exporting() ? 'Exporting CSV, please wait' : 'Export portfolio as CSV'"
+      >
+        @if (exporting()) { Exporting... } @else { Export CSV }
+      </button>
     </div>
-  
-    <!-- KPI row -->
-    <div class="kpi-row" role="list" aria-label="Period summary">
-      <div class="kpi-card" role="listitem">
-        <div class="kpi-label">Period return</div>
-        <div class="kpi-val gain">{{ kpis.periodReturn }}</div>
-      </div>
-      <div class="kpi-card" role="listitem">
-        <div class="kpi-label">Best position</div>
-        <div class="kpi-val">{{ kpis.bestPosition }}</div>
-      </div>
-      <div class="kpi-card" role="listitem">
-        <div class="kpi-label">Worst position</div>
-        <div class="kpi-val loss">{{ kpis.worstPosition }}</div>
-      </div>
+
+    <div class="kpi-metrics" role="list" aria-label="Report key metrics">
+      @for (kpi of kpis(); track kpi.id) {
+        <article class="kpi-cell" role="listitem" [attr.aria-label]="kpi.label + ': ' + kpi.value">
+          <p class="kpi-label">{{ kpi.label }}</p>
+          <p class="kpi-value" [class.kpi-gain]="kpi.trend === 'up'" [class.kpi-loss]="kpi.trend === 'down'">
+            {{ kpi.value }}
+          </p>
+        </article>
+      }
     </div>
-  
-    <!-- Tab row -->
-    <div
-      class="tab-row"
-      role="tablist"
-      aria-label="Report type"
-    >
+
+    <div class="tab-row" role="tablist" aria-label="Report type">
       @for (tab of tabs; track tab.id) {
         <button
+          type="button"
           class="tab-btn"
           role="tab"
-          [class.active]="activeTab() === tab.id"
+          [class.tab-btn--active]="activeTab() === tab.id"
           [attr.aria-selected]="activeTab() === tab.id"
           [attr.aria-controls]="'panel-' + tab.id"
           [id]="'tab-' + tab.id"
@@ -52,47 +43,46 @@
         </button>
       }
     </div>
-  
-    <!-- Tab panels -->
-    @for (tab of tabs; track tab.id) {
-      <div
-        [id]="'panel-' + tab.id"
-        role="tabpanel"
-        [attr.aria-labelledby]="'tab-' + tab.id"
-        [hidden]="activeTab() !== tab.id"
-      >
-        @if (tab.id === 'performance') {
-          <div class="panel-layout">
-            <div class="section-card">
-              <div class="section-hdr">
-                <span class="section-title">Monthly performance</span>
-                <span class="section-badge">combineLatest + scan</span>
-              </div>
-              <div class="section-body">
-                @if (loading()) {
-                  <div class="skeleton-chart" aria-busy="true"
-                       aria-label="Loading performance data"></div>
-                } @else {
-                  <app-performance-chart [rows]="perfRows()" />
-                }
-              </div>
+  </header>
+
+  @for (tab of tabs; track tab.id) {
+    <div
+      class="reports-panel"
+      [id]="'panel-' + tab.id"
+      role="tabpanel"
+      [attr.aria-labelledby]="'tab-' + tab.id"
+      [hidden]="activeTab() !== tab.id"
+    >
+      @if (tab.id === 'performance') {
+        <div class="panel-layout">
+          <section class="section-card">
+            <header class="section-hdr">
+              <span class="section-title">Monthly performance</span>
+              <span class="section-badge">Combined source view</span>
+            </header>
+            <div class="section-body">
+              @if (loading()) {
+                <div class="skeleton-chart" aria-busy="true" aria-label="Loading performance data"></div>
+              } @else {
+                <app-performance-chart [rows]="perfRows()" />
+              }
             </div>
-  
-            <div class="section-card">
-              <div class="section-hdr">
-                <span class="section-title">Export history</span>
-              </div>
+          </section>
+
+          <section class="section-card">
+            <header class="section-hdr">
+              <span class="section-title">Export history</span>
+            </header>
+            <div class="section-body section-body--flush">
               <app-export-history [records]="exportHistory()" />
             </div>
-          </div>
-        }
-  
-        @if (tab.id !== 'performance') {
-          <div class="coming-soon" role="status">
-            <p>{{ tab.label }} report coming soon.</p>
-          </div>
-        }
-      </div>
-    }
-  
-  </section>
+          </section>
+        </div>
+      } @else {
+        <div class="coming-soon" role="status">
+          <p>{{ tab.label }} report coming soon.</p>
+        </div>
+      }
+    </div>
+  }
+</section>

@@ -18,6 +18,6 @@ import {
     records = input.required<ExportRecord[]>();
   
     download(record: ExportRecord) {
-      console.log('Re-download:', record.name);
+    void record;
     }
   }

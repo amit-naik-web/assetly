@@ -1,46 +1,50 @@
 .perf-chart {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.perf-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.perf-sym {
+  width: 52px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.bar-wrap {
+  flex: 1;
+  height: 10px;
+  background: var(--surface);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+
+  &.bar-loss {
+    opacity: 0.78;
   }
-  
-  .perf-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .perf-sym {
-    width: 48px;
-    font-size: 11px;
-    font-weight: 600;
-    font-family: 'SF Mono', monospace;
-    color: var(--text-primary);
-    flex-shrink: 0;
-  }
-  
-  .bar-wrap {
-    flex: 1;
-    height: 8px;
-    background: var(--surface);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .bar {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.4s ease;
-    &.bar-loss { opacity: 0.7; }
-  }
-  
-  .perf-pct {
-    width: 52px;
-    text-align: right;
-    font-size: 12px;
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    flex-shrink: 0;
-    &.gain { color: var(--gain); }
-    &.loss { color: var(--loss); }
-  }
+}
+
+.perf-pct {
+  width: 56px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+
+  &.gain { color: var(--gain); }
+  &.loss { color: var(--loss); }
+}
