@@ -15,6 +15,7 @@ export interface Indicator {
 }
 
 export type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y';
+export type ChartViewMode = 'candlestick' | 'line';
 
 export const TIME_RANGES: TimeRange[] = ['1W', '1M', '3M', '6M', '1Y'];
 

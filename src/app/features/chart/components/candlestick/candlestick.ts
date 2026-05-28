@@ -13,7 +13,7 @@ import {
   } from '@angular/core';
   import { NgClass } from '@angular/common';
   import * as d3 from 'd3';
-  import { OhlcvCandle } from '../../models/chart.model';
+  import { ChartViewMode, OhlcvCandle } from '../../models/chart.model';
   
   @Component({
     selector: 'app-candlestick',
@@ -26,6 +26,7 @@ import {
   export class Candlestick implements OnDestroy {
     candles  = input.required<OhlcvCandle[]>();
     symbol   = input.required<string>();
+    viewMode = input<ChartViewMode>('candlestick');
   
     @ViewChild('svgEl') svgEl!: ElementRef<SVGSVGElement>;
   
@@ -47,22 +48,23 @@ import {
   
     private resizeObserver!: ResizeObserver;
   
-    constructor() {}
+  // Keep chart in sync with candle/symbol updates.
+  private readonly chartSyncEffect = effect(() => {
+    const data = this.candles();
+    this.symbol();
+    this.viewMode();
+    queueMicrotask(() => {
+      if (data.length && this.svgEl) {
+        this.drawChart(data);
+      }
+    });
+  });
   
     ngAfterViewInit() {
       // Draw immediately with current data
       if (this.candles().length) {
         this.drawChart(this.candles());
       }
-  
-      // Set up effect AFTER view is ready
-      effect(() => {
-        const data = this.candles();
-        const sym  = this.symbol();
-        if (data.length && this.svgEl) {
-          this.drawChart(data);
-        }
-      });
     }
 
     ngOnDestroy() {
@@ -135,7 +137,7 @@ import {
   
       const container = el.parentElement!;
       const W = container.clientWidth > 0 ? container.clientWidth : 600;
-      const H = 220;
+      const H = Math.max(container.clientHeight > 0 ? container.clientHeight : 220, 220);
       const margin = { top: 10, right: 20, bottom: 30, left: 50 };
       const innerW  = W - margin.left - margin.right;
       const innerH  = H - margin.top - margin.bottom;
@@ -214,34 +216,58 @@ import {
         )
         .call(gg => gg.select('.domain').remove());
   
-      // Wicks (high-low lines)
-      g.selectAll('.wick')
-        .data(data)
-        .enter()
-        .append('line')
-        .attr('class', 'wick')
-        .attr('x1', (_, i) => xScale(i.toString())! + xScale.bandwidth() / 2)
-        .attr('x2', (_, i) => xScale(i.toString())! + xScale.bandwidth() / 2)
-        .attr('y1', d => yScale(d.high))
-        .attr('y2', d => yScale(d.low))
-        .style('stroke', d => d.close >= d.open ? '#1D9E75' : '#E24B4A')
-        .style('stroke-width', 1);
-  
-      // Candle bodies
-      g.selectAll('.candle')
-        .data(data)
-        .enter()
-        .append('rect')
-        .attr('class', 'candle')
-        .attr('x', (_, i) => xScale(i.toString())!)
-        .attr('y', d => yScale(Math.max(d.open, d.close)))
-        .attr('width', xScale.bandwidth())
-        .attr('height', d => {
-          const h = Math.abs(yScale(d.open) - yScale(d.close));
-          return Math.max(h, 1);
-        })
-        .attr('rx', 1)
-        .style('fill', d => d.close >= d.open ? '#1D9E75' : '#E24B4A');
+      if (this.viewMode() === 'candlestick') {
+        // Wicks (high-low lines)
+        g.selectAll('.wick')
+          .data(data)
+          .enter()
+          .append('line')
+          .attr('class', 'wick')
+          .attr('x1', (_, i) => xScale(i.toString())! + xScale.bandwidth() / 2)
+          .attr('x2', (_, i) => xScale(i.toString())! + xScale.bandwidth() / 2)
+          .attr('y1', d => yScale(d.high))
+          .attr('y2', d => yScale(d.low))
+          .style('stroke', d => d.close >= d.open ? '#1D9E75' : '#E24B4A')
+          .style('stroke-width', 1);
+    
+        // Candle bodies
+        g.selectAll('.candle')
+          .data(data)
+          .enter()
+          .append('rect')
+          .attr('class', 'candle')
+          .attr('x', (_, i) => xScale(i.toString())!)
+          .attr('y', d => yScale(Math.max(d.open, d.close)))
+          .attr('width', xScale.bandwidth())
+          .attr('height', d => {
+            const h = Math.abs(yScale(d.open) - yScale(d.close));
+            return Math.max(h, 1);
+          })
+          .attr('rx', 1)
+          .style('fill', d => d.close >= d.open ? '#1D9E75' : '#E24B4A');
+      } else {
+        const line = d3.line<OhlcvCandle>()
+          .x((_, i) => xScale(i.toString())! + xScale.bandwidth() / 2)
+          .y(d => yScale(d.close))
+          .curve(d3.curveMonotoneX);
+
+        g.append('path')
+          .datum(data)
+          .attr('fill', 'none')
+          .attr('stroke', '#185FA5')
+          .attr('stroke-width', 2)
+          .attr('d', line);
+
+        g.selectAll('.line-dot')
+          .data(data)
+          .enter()
+          .append('circle')
+          .attr('class', 'line-dot')
+          .attr('cx', (_, i) => xScale(i.toString())! + xScale.bandwidth() / 2)
+          .attr('cy', d => yScale(d.close))
+          .attr('r', 2)
+          .style('fill', '#185FA5');
+      }
   
       // Crosshair line (updated by keyboard)
       const crosshairLine = g.append('line')

@@ -1,13 +1,16 @@
-<section aria-labelledby="chart-heading">
-  <h2 id="chart-heading" class="sr-only">Chart analysis</h2>
+<section class="chart-shell" aria-labelledby="chart-heading">
+  <header class="chart-topbar">
+    <h2 id="chart-heading" class="chart-heading">Chart</h2>
+  </header>
 
-  <!-- Symbol + Range selector row -->
-  <div class="controls-row">
-    <div class="symbol-tabs" role="group" aria-label="Select stock symbol">
+  <section class="holdings-row">
+    <div class="holdings-list" role="group" aria-label="Select holding symbol">
+      <span class="holdings-label">Holdings</span>
       @for (sym of chartSymbols; track sym) {
         <button
-          class="symbol-tab"
-          [class.active]="symbol() === sym"
+          type="button"
+          class="holding-row"
+          [class.holding-row--active]="symbol() === sym"
           [attr.aria-pressed]="symbol() === sym"
           (click)="changeSymbol(sym)"
         >
@@ -15,61 +18,124 @@
         </button>
       }
     </div>
+  </section>
 
-    <div class="range-tabs" role="group" aria-label="Select time range">
-      @for (range of timeRanges; track range) {
-        <button
-          class="range-tab"
-          [class.active]="selectedRange() === range"
-          [attr.aria-pressed]="selectedRange() === range"
-          (click)="changeRange(range)"
-        >
-          {{ range }}
-        </button>
-      }
-    </div>
-  </div>
-
-  <!-- Main chart area -->
-  <div class="chart-layout">
-
-    <!-- Candlestick chart -->
-    <div class="chart-card">
-      <div class="card-header">
-        <span class="card-title">{{ symbol() }} — candlestick</span>
-        @if (loading()) {
-          <span class="loading-badge" aria-live="polite" role="status">
-            Loading...
-          </span>
-        }
+  <div class="selected-stock-row">
+    <div class="selected-stock-id">
+      <div class="selected-stock-meta">
+        <span class="selected-stock-name">{{ symbolNames[symbol()] }}</span>
+        <span class="selected-price-symbol">{{ symbol() }}</span>
       </div>
-
-      @if (!loading() && candles().length) {
-        <div class="chart-body">
-          <app-candlestick
-            [candles]="candles()"
-            [symbol]="symbol()"
-          />
-        </div>
-      }
-
-      @if (loading()) {
-        <div
-          class="chart-skeleton"
-          aria-busy="true"
-          aria-label="Loading chart data"
-        ></div>
-      }
+      <div class="selected-stock-price">
+        <span class="selected-price">{{ details().lastPrice }}</span>
+      </div>
     </div>
-
-    <!-- Indicator panel -->
-    @if (!loading() && candles().length) {
-      <app-indicator-panel
-        [candles]="candles()"
-        [symbol]="symbol()"
-      />
-    }
-
   </div>
 
+  <div class="chart-layout">
+    <section class="left-panel">
+      <section class="section-card section-card--chart">
+        <header class="section-hdr section-hdr--chart">
+          <div class="chart-controls">
+            <div class="view-icons" role="group" aria-label="Select chart view">
+              @for (view of chartViews; track view.id) {
+                <button
+                  type="button"
+                  class="view-icon-btn"
+                  [class.view-icon-btn--active]="selectedView() === view.id"
+                  [attr.aria-pressed]="selectedView() === view.id"
+                  [attr.aria-label]="view.label + ' view'"
+                  (click)="changeView(view.id)"
+                >
+                  @if (view.id === 'candlestick') {
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <line x1="6" y1="4" x2="6" y2="20"></line>
+                      <rect x="4.5" y="8" width="3" height="8"></rect>
+                      <line x1="12" y1="3" x2="12" y2="21"></line>
+                      <rect x="10.5" y="6" width="3" height="10"></rect>
+                      <line x1="18" y1="5" x2="18" y2="19"></line>
+                      <rect x="16.5" y="10" width="3" height="6"></rect>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <polyline points="3,16 8,12 12,14 17,8 21,10"></polyline>
+                      <circle cx="3" cy="16" r="1.5"></circle>
+                      <circle cx="8" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="14" r="1.5"></circle>
+                      <circle cx="17" cy="8" r="1.5"></circle>
+                      <circle cx="21" cy="10" r="1.5"></circle>
+                    </svg>
+                  }
+                </button>
+              }
+            </div>
+            <div class="range-pills" role="group" aria-label="Select time range">
+              @for (range of timeRanges; track range) {
+                <button
+                  type="button"
+                  class="range-pill"
+                  [class.range-pill--active]="selectedRange() === range"
+                  [attr.aria-pressed]="selectedRange() === range"
+                  (click)="changeRange(range)"
+                >
+                  {{ range }}
+                </button>
+              }
+            </div>
+          </div>
+        </header>
+        @if (!loading() && candles().length) {
+          <div class="chart-body">
+            <app-candlestick [candles]="candles()" [symbol]="symbol()" [viewMode]="selectedView()" />
+          </div>
+        } @else {
+          <div class="chart-skeleton" aria-busy="true" aria-label="Loading chart data"></div>
+        }
+      </section>
+    </section>
+
+    <aside class="right-panel">
+      <div class="details-body">
+        <div class="detail-grid">
+          <article class="detail-card detail-card--wide">
+            <p class="detail-label">Avg volume</p>
+            <p class="detail-value">{{ details().avgVolume }}</p>
+            <p class="detail-sub">{{ details().candleCount }}</p>
+          </article>
+        </div>
+
+        <section class="range-indicators">
+          <h4 class="range-title">Indicators</h4>
+
+          <div class="range-row">
+            <div class="range-head">
+              <span>52W low</span>
+              <span>52W high</span>
+            </div>
+            <div class="range-track" role="img" aria-label="Current price position between 52 week low and high">
+              <div class="range-marker" [style.left.%]="rangeStats().yearPosition"></div>
+            </div>
+            <div class="range-values">
+              <span>{{ rangeStats().yearLow | number:'1.2-2' }}</span>
+              <span>{{ rangeStats().yearHigh | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="range-row">
+            <div class="range-head">
+              <span>Today low</span>
+              <span>Today high</span>
+            </div>
+            <div class="range-track" role="img" aria-label="Current price position between today low and high">
+              <div class="range-marker" [style.left.%]="rangeStats().dayPosition"></div>
+            </div>
+            <div class="range-values">
+              <span>{{ rangeStats().dayLow | number:'1.2-2' }}</span>
+              <span>{{ rangeStats().dayHigh | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
 </section>
