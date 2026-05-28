@@ -132,12 +132,16 @@
             'row-up': (tick?.changePct ?? 0) > 0,
             'row-down': (tick?.changePct ?? 0) < 0
           }"
+          role="link"
+          tabindex="0"
+          (click)="openChart(row.symbol)"
+          (keydown)="onRowKeydown($event, row.symbol)"
           [attr.aria-label]="
             row.symbol + ', ' +
             row.companyName + ', $' +
             (tick?.price?.toFixed(2) ?? '0') + ', ' +
             ((tick?.changePct ?? 0) >= 0 ? 'up' : 'down') + ' ' +
-            (Math.abs(tick?.changePct ?? 0).toFixed(2)) + ' percent'
+            (Math.abs(tick?.changePct ?? 0).toFixed(2)) + ' percent. Open chart.'
           "
         >
           <td class="col-symbol">

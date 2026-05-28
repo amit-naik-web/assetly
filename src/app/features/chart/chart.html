@@ -94,6 +94,49 @@
 
     <aside class="right-panel">
       <div class="details-body">
+        @if (selectedHoldingCard(); as holding) {
+          <section
+            class="holding-context-card"
+            role="region"
+            [attr.aria-label]="'Holding details for ' + symbol()"
+          >
+            <div class="holding-context-head">
+              <p class="holding-context-title">Holding details</p>
+            </div>
+            <div class="holding-context-grid">
+              <div class="holding-context-item">
+                <span class="holding-context-label">Shares</span>
+                <span class="holding-context-value">{{ holding.shares }}</span>
+              </div>
+              <div class="holding-context-item">
+                <span class="holding-context-label">Sector</span>
+                <span class="holding-context-value">{{ holding.sector }}</span>
+              </div>
+              <div class="holding-context-item">
+                <span class="holding-context-label">Avg cost</span>
+                <span class="holding-context-value">{{ holding.avgCost }}</span>
+              </div>
+              <div class="holding-context-item">
+                <span class="holding-context-label">Current</span>
+                <span class="holding-context-value">{{ holding.currentPrice }}</span>
+              </div>
+              <div class="holding-context-item">
+                <span class="holding-context-label">Value</span>
+                <span class="holding-context-value">{{ holding.totalValue }}</span>
+              </div>
+              <div class="holding-context-item holding-context-item--accent">
+                <span class="holding-context-label">Total gain</span>
+                <span
+                  class="holding-context-value"
+                  [ngClass]="selectedHolding()?.totalGain ?? 0 >= 0 ? 'gain' : 'loss'"
+                >
+                  {{ holding.totalGain }} ({{ holding.totalGainPct }})
+                </span>
+              </div>
+            </div>
+          </section>
+        }
+
         <div class="detail-grid">
           <article class="detail-card detail-card--wide">
             <p class="detail-label">Avg volume</p>
@@ -133,6 +176,7 @@
             </div>
           </div>
         </section>
+
       </div>
     </aside>
   </div>

@@ -172,12 +172,16 @@
         @for (row of sortedRows(); track row.id; let i = $index) {
           <tr
             [attr.aria-rowindex]="i + 1"
+            role="link"
+            tabindex="0"
+            (click)="openHoldingChart(row)"
+            (keydown)="onRowKeydown($event, row)"
             [attr.aria-label]="
               row.symbol + ', ' + row.companyName + ', ' +
               row.shares + ' shares, price $' + row.currentPrice.toFixed(2) + ', ' +
               (row.dayChangePct >= 0 ? 'up' : 'down') + ' ' +
               Math.abs(row.dayChangePct).toFixed(2) + ' percent today, ' +
-              'total value $' + row.totalValue.toFixed(0)
+              'total value $' + row.totalValue.toFixed(0) + '. Open chart with holding details.'
             "
             [ngClass]="{
               'row-gain': row.dayChangePct > 0,

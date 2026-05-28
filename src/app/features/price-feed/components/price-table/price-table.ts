@@ -7,8 +7,11 @@ import {
   effect,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { PriceFeedService } from '../../services/price-feed.service';
 import { PriceTick, TRACKED_SYMBOLS } from '../../models/price.model';
+import { HoldingsService } from '../../../holdings/services/holdings.service';
 
 type SortColumn = 'symbol' | 'price' | 'change' | 'changePct' | 'volume';
 type SortDir = 'asc' | 'desc' | 'none';
@@ -34,6 +37,12 @@ interface PriceRow {
 export class PriceTable {
   readonly Math = Math;
   private readonly service = inject(PriceFeedService);
+  private readonly router = inject(Router);
+  private readonly holdingsService = inject(HoldingsService);
+
+  readonly holdingsRows = toSignal(this.holdingsService.getHoldings(), {
+    initialValue: [],
+  });
 
   readonly symbolCount = TRACKED_SYMBOLS.length;
 
@@ -210,5 +219,37 @@ export class PriceTable {
     if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(1)}M`;
     if (vol >= 1_000)     return `${(vol / 1_000).toFixed(0)}K`;
     return vol.toString();
+  }
+
+  openChart(symbol: string): void {
+    const selectedHolding = this.holdingsRows().find(row => row.symbol === symbol);
+
+    if (!selectedHolding) {
+      void this.router.navigate(['/chart', symbol]);
+      return;
+    }
+
+    void this.router.navigate(['/chart', symbol], {
+      queryParams: {
+        from: 'prices',
+        symbol: selectedHolding.symbol,
+        companyName: selectedHolding.companyName,
+        sector: selectedHolding.sector,
+        shares: selectedHolding.shares,
+        avgCost: selectedHolding.avgCost,
+        currentPrice: selectedHolding.currentPrice,
+        dayChangePct: selectedHolding.dayChangePct,
+        totalValue: selectedHolding.totalValue,
+        totalGain: selectedHolding.totalGain,
+        totalGainPct: selectedHolding.totalGainPct,
+      },
+    });
+  }
+
+  onRowKeydown(event: KeyboardEvent, symbol: string): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openChart(symbol);
+    }
   }
 }

@@ -8,11 +8,12 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { ChartService } from './services/chart.service';
+import { HoldingsService } from '../holdings/services/holdings.service';
 import { Candlestick } from './components/candlestick/candlestick';
 import {
   OhlcvCandle,
@@ -26,7 +27,7 @@ import {
   selector: 'app-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, Candlestick],
+  imports: [DecimalPipe, NgClass, Candlestick],
   templateUrl: './chart.html',
   styleUrl: './chart.scss',
 })
@@ -34,6 +35,7 @@ export class Chart {
   private route   = inject(ActivatedRoute);
   private router  = inject(Router);
   private service = inject(ChartService);
+  private holdingsService = inject(HoldingsService);
   private destroyRef = inject(DestroyRef);
 
   readonly timeRanges  = TIME_RANGES;
@@ -124,6 +126,94 @@ export class Chart {
     { initialValue: [] }
   );
 
+  private readonly holdingsRows = toSignal(this.holdingsService.getHoldings(), {
+    initialValue: [],
+  });
+
+  private readonly holdingParams = toSignal(
+    this.route.queryParamMap.pipe(
+      map(params => ({
+        source: params.get('from'),
+        symbol: params.get('symbol'),
+        companyName: params.get('companyName'),
+        sector: params.get('sector'),
+        shares: this.parseQueryNumber(params.get('shares')),
+        avgCost: this.parseQueryNumber(params.get('avgCost')),
+        currentPrice: this.parseQueryNumber(params.get('currentPrice')),
+        totalValue: this.parseQueryNumber(params.get('totalValue')),
+        totalGain: this.parseQueryNumber(params.get('totalGain')),
+        totalGainPct: this.parseQueryNumber(params.get('totalGainPct')),
+      })),
+    ),
+    {
+      initialValue: {
+        source: null,
+        symbol: null,
+        companyName: null,
+        sector: null,
+        shares: 0,
+        avgCost: 0,
+        currentPrice: 0,
+        totalValue: 0,
+        totalGain: 0,
+        totalGainPct: 0,
+      },
+    },
+  );
+
+  readonly selectedHolding = computed(() => {
+    const params = this.holdingParams();
+    const selectedSymbol = this.symbol();
+    const hasSupportedSource =
+      params.source === 'holdings' || params.source === 'prices';
+
+    if (hasSupportedSource && params.symbol === selectedSymbol) {
+      return {
+        companyName: params.companyName ?? this.symbolNames[selectedSymbol] ?? selectedSymbol,
+        sector: params.sector ?? '--',
+        shares: params.shares,
+        avgCost: params.avgCost,
+        currentPrice: params.currentPrice,
+        totalValue: params.totalValue,
+        totalGain: params.totalGain,
+        totalGainPct: params.totalGainPct,
+      };
+    }
+
+    const row = this.holdingsRows().find(holding => holding.symbol === selectedSymbol);
+    if (!row) {
+      return null;
+    }
+
+    return {
+      companyName: row.companyName,
+      sector: row.sector,
+      shares: row.shares,
+      avgCost: row.avgCost,
+      currentPrice: row.currentPrice,
+      totalValue: row.totalValue,
+      totalGain: row.totalGain,
+      totalGainPct: row.totalGainPct,
+    };
+  });
+
+  readonly selectedHoldingCard = computed(() => {
+    const holding = this.selectedHolding();
+    if (!holding) {
+      return null;
+    }
+    return {
+      companyName: holding.companyName,
+      sector: holding.sector,
+      shares: this.formatShares(holding.shares),
+      avgCost: this.formatCurrency(holding.avgCost),
+      currentPrice: this.formatCurrency(holding.currentPrice),
+      totalValue: this.formatCurrency(holding.totalValue),
+      totalGain: this.formatSignedCurrency(holding.totalGain),
+      totalGainPct: this.formatSignedPercent(holding.totalGainPct),
+    };
+  });
+
   constructor() {
     // Use resolver data initially
     effect(() => {
@@ -191,6 +281,12 @@ export class Chart {
     return value >= 0 ? `+${abs}%` : `-${abs}%`;
   }
 
+  private formatShares(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
   private formatVolume(value: number): string {
     if (value >= 1_000_000_000) {
       return `${(value / 1_000_000_000).toFixed(2)}B`;
@@ -209,5 +305,11 @@ export class Chart {
       return 0;
     }
     return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+  }
+
+  private parseQueryNumber(value: string | null): number {
+    if (!value) return 0;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 }
