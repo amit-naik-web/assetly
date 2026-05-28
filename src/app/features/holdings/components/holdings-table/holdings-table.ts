@@ -96,6 +96,27 @@ export class HoldingsTable {
     return this.sortDir() === 'asc' ? 'ascending' : 'descending';
   }
 
+  getMiniChartPoints(row: HoldingRow): string {
+    const hash = Array.from(row.symbol).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    const amplitude = Math.min(5.5, Math.max(1.5, Math.abs(row.dayChangePct) * 2.2));
+    const direction = row.dayChangePct >= 0 ? -1 : 1;
+    const offsets = [
+      ((hash % 5) - 2) * 0.6,
+      (((hash >> 1) % 7) - 3) * 0.55,
+      (((hash >> 2) % 5) - 2) * 0.5,
+      (((hash >> 3) % 7) - 3) * 0.45,
+      (((hash >> 4) % 5) - 2) * 0.4,
+    ];
+    const xStep = 14;
+    const baselineY = 12;
+    const points = offsets.map((offset, index) => {
+      const x = 3 + index * xStep;
+      const y = baselineY + direction * amplitude + offset;
+      return `${x},${Math.max(3, Math.min(21, y)).toFixed(2)}`;
+    });
+    return points.join(' ');
+  }
+
   readonly Math = Math;
   readonly sectorColor = getSectorColor;
 }
