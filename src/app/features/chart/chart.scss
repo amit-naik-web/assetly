@@ -121,10 +121,17 @@
   min-height: 68px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 8px;
   padding: 0 14px;
   background: var(--ch-card-bg);
+}
+
+.selected-stock-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .selected-stock-id {
@@ -193,7 +200,6 @@
   border-radius: 999px;
   overflow: hidden;
   background: var(--ch-card-bg);
-  margin-left: auto;
 }
 
 .range-pill {
@@ -330,7 +336,6 @@
   min-height: 0;
   display: flex;
   background: var(--ch-surface);
-  border-top: 1px solid var(--ch-border);
 }
 
 .chart-body ::ng-deep app-candlestick {

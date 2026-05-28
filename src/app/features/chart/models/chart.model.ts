@@ -14,10 +14,10 @@ export interface Indicator {
     formatted: string;
 }
 
-export type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y';
+export type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All';
 export type ChartViewMode = 'candlestick' | 'line';
 
-export const TIME_RANGES: TimeRange[] = ['1W', '1M', '3M', '6M', '1Y'];
+export const TIME_RANGES: TimeRange[] = ['1W', '1M', '3M', '6M', '1Y', 'All'];
 
 export const CHART_SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'META'];
 
