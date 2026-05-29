@@ -64,3 +64,21 @@ export const SYMBOL_COMPANY_NAMES: Record<string, string> = {
   UNH: 'UnitedHealth Group',
   MA: 'Mastercard Inc.',
 };
+
+export const SYMBOL_SECTORS: Record<string, string> = {
+  AAPL: 'Technology',
+  MSFT: 'Technology',
+  NVDA: 'Technology',
+  TSLA: 'Automotive',
+  GOOGL: 'Technology',
+  META: 'Technology',
+  AMZN: 'Technology',
+  JPM: 'Financials',
+  'BRK.B': 'Financials',
+  JNJ: 'Healthcare',
+  V: 'Financials',
+  PG: 'Consumer',
+  XOM: 'Energy',
+  UNH: 'Healthcare',
+  MA: 'Financials',
+};

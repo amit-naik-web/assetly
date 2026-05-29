@@ -121,19 +121,23 @@
   align-items: baseline;
   gap: 8px;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: -0.015em;
-  color: var(--al-text);
+  letter-spacing: 0.04em;
+  color: var(--al-text-muted);
   line-height: 1.15;
 }
 
 .section-badge {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
   color: var(--al-text-muted);
+  background: var(--al-surface);
+  border: 1px solid var(--al-border);
+  border-radius: 999px;
+  padding: 3px 8px;
   line-height: 1.1;
 }
 
