@@ -23,7 +23,8 @@
           class="field-input"
           formControlName="symbol"
           placeholder="e.g. AAPL"
-          autocomplete="off"
+          autocomplete="on"
+          list="symbol-suggestions"
           autocapitalize="characters"
           [ngClass]="{
             'input-error':   symbolCtrl.invalid && symbolCtrl.touched,
@@ -32,6 +33,11 @@
           [attr.aria-invalid]="symbolCtrl.invalid && symbolCtrl.touched ? 'true' : null"
           aria-describedby="symbol-validation symbol-hint"
         />
+        <datalist id="symbol-suggestions">
+          @for (symbol of symbolSuggestions; track symbol) {
+            <option [value]="symbol"></option>
+          }
+        </datalist>
   
         <span id="symbol-hint" class="field-hint">
           US ticker symbol (AAPL, MSFT, NVDA…)
@@ -68,21 +74,6 @@
             {{ symbolMessage() }}
           </span>
         }
-      </div>
-  
-      <!-- Condition field -->
-      <div class="field-group">
-        <label for="alert-condition" class="field-label">Condition</label>
-        <select
-          id="alert-condition"
-          class="field-select"
-          formControlName="condition"
-          aria-describedby="condition-hint"
-        >
-          @for (cond of conditions; track cond) {
-            <option [value]="cond">{{ conditionLabels[cond] }}</option>
-          }
-        </select>
       </div>
   
       <!-- Target value field -->
