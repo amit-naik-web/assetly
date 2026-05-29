@@ -11,104 +11,111 @@
   }
 </div>
 
-<div class="list-wrap" role="region" aria-label="Active alerts">
-
-  <!-- Triggered section -->
-  @if (store.triggered().length) {
-    <div class="section-label triggered-label">
-      <span class="trigger-dot" aria-hidden="true"></span>
-      {{ store.triggered().length }} triggered
-    </div>
-
-    <ul class="alert-list" aria-label="Triggered alerts" role="list">
-      @for (alert of store.triggered(); track alert.id) {
-        <li
-          class="alert-card triggered"
-          role="listitem"
-          [attr.aria-label]="getAlertAriaLabel(alert)"
-        >
-          <div class="alert-icon triggered-icon" aria-hidden="true">▲</div>
-          <div class="alert-body">
-            <div class="alert-sym">{{ alert.symbol }}</div>
-            <div class="alert-cond">
-              {{ conditionLabels[alert.condition] }}
-              ${{ alert.targetValue }}
-            </div>
-            <div class="alert-time">
-              Triggered {{ alert.triggeredAt | date:'shortTime' }}
-            </div>
-          </div>
-          <button
-            class="dismiss-btn"
-            (click)="dismiss(alert.id)"
-            [attr.aria-label]="'Dismiss ' + alert.symbol + ' alert'"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </li>
-      }
-    </ul>
-  }
+<div
+  class="list-wrap"
+  role="region"
+  aria-label="Active alerts"
+  [class.list-wrap--single]="!(store.watching().length && store.triggered().length)"
+>
 
   <!-- Watching section -->
   @if (store.watching().length) {
-    <div class="section-label">Watching</div>
+    <section class="alert-section" role="region" aria-label="Watching alerts">
+      <div class="section-toolbar">
+        <div class="section-toolbar-heading">
+          <span class="section-toolbar-label">
+            WATCHING
+            <span class="section-count">{{ store.watching().length }} total</span>
+          </span>
+        </div>
+      </div>
 
-    <ul class="alert-list" aria-label="Watching alerts" role="list">
-      @for (alert of store.watching(); track alert.id) {
-        <li
-          class="alert-card"
-          role="listitem"
-          [attr.aria-label]="getAlertAriaLabel(alert)"
-        >
-          <div class="alert-icon" aria-hidden="true">◷</div>
-          <div class="alert-body">
-            <div class="alert-sym">{{ alert.symbol }}</div>
-            <div class="alert-cond">
-              {{ conditionLabels[alert.condition] }}
-              ${{ alert.targetValue }}
-            </div>
-
-            <!-- Progress bar -->
-            <div class="progress-wrap">
-              <div
-                class="progress-track"
-                role="progressbar"
-                [attr.aria-valuenow]="alert.progressPct"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                [attr.aria-label]="getProgressLabel(alert)"
-              >
-                <div
-                  class="progress-fill"
-                  [style.width.%]="alert.progressPct"
-                ></div>
-              </div>
-              <span class="progress-pct" aria-hidden="true">
-                {{ alert.progressPct }}%
-              </span>
-            </div>
-          </div>
-          <button
-            class="dismiss-btn"
-            (click)="dismiss(alert.id)"
-            [attr.aria-label]="'Remove ' + alert.symbol + ' alert'"
+      <ul class="alert-list alert-list--scroll" aria-label="Watching alerts" role="list">
+        @for (alert of store.watching(); track alert.id) {
+          <li
+            class="alert-card watching"
+            role="listitem"
+            [attr.aria-label]="getAlertAriaLabel(alert)"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </li>
-      }
-    </ul>
+            <div class="alert-icon" aria-hidden="true">◷</div>
+            <div class="alert-body">
+              <div class="alert-identity">
+                <div class="alert-name">{{ getCompanyName(alert.symbol) }}</div>
+                <div class="alert-sym">{{ alert.symbol }}</div>
+              </div>
+              <div class="alert-cond">
+                {{ conditionLabels[alert.condition] }}
+                ${{ alert.targetValue }}
+              </div>
+            </div>
+            <button
+              class="dismiss-btn"
+              (click)="dismiss(alert.id)"
+              [attr.aria-label]="'Remove ' + getCompanyName(alert.symbol) + ' alert'"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  <!-- Triggered section -->
+  @if (store.triggered().length) {
+    <section class="alert-section" role="region" aria-label="Triggered alerts">
+      <div class="section-toolbar">
+        <div class="section-toolbar-heading">
+          <span class="section-toolbar-label triggered-label">
+            <span class="trigger-dot" aria-hidden="true"></span>
+            TRIGGERED
+            <span class="section-count">{{ store.triggered().length }} total</span>
+          </span>
+        </div>
+      </div>
+
+      <ul class="alert-list alert-list--scroll" aria-label="Triggered alerts" role="list">
+        @for (alert of store.triggered(); track alert.id) {
+          <li
+            class="alert-card triggered"
+            role="listitem"
+            [attr.aria-label]="getAlertAriaLabel(alert)"
+          >
+            <div class="alert-icon triggered-icon" aria-hidden="true">▲</div>
+            <div class="alert-body">
+              <div class="alert-identity">
+                <div class="alert-name">{{ getCompanyName(alert.symbol) }}</div>
+                <div class="alert-sym">{{ alert.symbol }}</div>
+              </div>
+              <div class="alert-cond">
+                {{ conditionLabels[alert.condition] }}
+                ${{ alert.targetValue }}
+              </div>
+              <div class="alert-time">
+                Triggered {{ alert.triggeredAt | date:'shortTime' }}
+              </div>
+            </div>
+            <button
+              class="dismiss-btn"
+              (click)="dismiss(alert.id)"
+              [attr.aria-label]="'Dismiss ' + getCompanyName(alert.symbol) + ' alert'"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
   }
 
   <!-- Empty state -->

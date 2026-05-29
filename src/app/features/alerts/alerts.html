@@ -1,25 +1,9 @@
 <section class="alerts-shell" aria-labelledby="alerts-heading">
-  <h2 id="alerts-heading" class="sr-only">Alerts and watchlist</h2>
+  <h2 id="alerts-heading" class="sr-only">Alerts</h2>
 
-  <header class="alerts-header">
-    <div class="alerts-title-row">
-      <h3 class="alerts-title">Alerts</h3>
-    </div>
-
-    <div class="kpi-metrics" role="list" aria-label="Alert key metrics">
-      @for (kpi of kpis(); track kpi.id) {
-        <article class="kpi-cell" role="listitem" [attr.aria-label]="kpi.label + ': ' + kpi.value + ', ' + kpi.sub">
-          <p class="kpi-label">{{ kpi.label }}</p>
-          <p
-            class="kpi-value"
-            [class.kpi-gain]="kpi.trend === 'up'"
-            [class.kpi-loss]="kpi.trend === 'down'"
-          >
-            {{ kpi.value }}
-          </p>
-          <p class="kpi-sub">{{ kpi.sub }}</p>
-        </article>
-      }
+  <header class="alerts-toolbar">
+    <div class="alerts-toolbar-heading">
+      <span class="alerts-toolbar-label">ALERTS</span>
     </div>
   </header>
 
@@ -33,25 +17,18 @@
           <app-alert-builder (alertCreated)="onAlertCreated($event)" />
         </div>
       </section>
-
-      <section class="section-card">
-        <header class="section-hdr">
-          <span class="section-title">Active alerts</span>
-          <span class="section-badge">{{ store.entities().length }} total</span>
-        </header>
-        <div class="section-body">
-          <app-alert-list />
-        </div>
-      </section>
     </div>
 
     <aside class="right-col">
-      <section class="section-card section-card--watchlist">
+      <section class="section-card">
         <header class="section-hdr">
-          <span class="section-title">Watchlist</span>
+          <span class="section-title">
+            Active alerts
+            <span class="section-badge">{{ store.entities().length }} total</span>
+          </span>
         </header>
-        <div class="section-body section-body--watchlist">
-          <app-watchlist />
+        <div class="section-body section-body--alerts-list">
+          <app-alert-list />
         </div>
       </section>
     </aside>

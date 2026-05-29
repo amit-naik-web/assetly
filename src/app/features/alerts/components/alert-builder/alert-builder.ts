@@ -21,7 +21,6 @@ import {
     Alert,
     AlertCondition,
     NotifyMethod,
-    CONDITION_LABELS,
     MOCK_PRICES,
   } from '../../models/alert.model';
   
@@ -40,9 +39,8 @@ import {
   
     alertCreated = output<Alert>();
   
-    readonly conditionLabels = CONDITION_LABELS;
-    readonly conditions = Object.keys(CONDITION_LABELS) as AlertCondition[];
     readonly notifyOptions: NotifyMethod[] = ['TOAST', 'EMAIL', 'BOTH'];
+    readonly symbolSuggestions = Object.keys(MOCK_PRICES).sort();
   
     // Validation state signals
     readonly validating     = signal(false);
@@ -59,7 +57,6 @@ import {
         asyncValidators: [this.symbolAsyncValidator()],
         updateOn: 'blur',
       }),
-      condition: this.fb.control<AlertCondition>('PRICE_ABOVE'),
       targetValue: this.fb.control(0, [
         Validators.required,
         Validators.min(0.01),
@@ -104,10 +101,11 @@ import {
         return;
       }
   
-      const { symbol, condition, targetValue, notifyVia } = this.form.getRawValue();
+      const { symbol, targetValue, notifyVia } = this.form.getRawValue();
       const upper        = symbol.toUpperCase();
       const currentPrice = MOCK_PRICES[upper] ?? 0;
-  
+      const condition: AlertCondition = 'PRICE_ABOVE';
+
       const alert: Alert = {
         id:          `${upper}-${Date.now()}`,
         symbol:      upper,

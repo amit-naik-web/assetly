@@ -46,3 +46,21 @@ export const MOCK_PRICES: Record<string, number> = {
   'BRK.B': 541.88, JNJ: 148.90, V: 310.45, PG: 162.30,
   XOM: 118.45, UNH: 522.30, MA: 480.22,
 };
+
+export const SYMBOL_COMPANY_NAMES: Record<string, string> = {
+  AAPL: 'Apple Inc.',
+  MSFT: 'Microsoft Corp.',
+  NVDA: 'NVIDIA Corp.',
+  TSLA: 'Tesla Inc.',
+  GOOGL: 'Alphabet Inc.',
+  META: 'Meta Platforms',
+  AMZN: 'Amazon.com Inc.',
+  JPM: 'JPMorgan Chase',
+  'BRK.B': 'Berkshire Hathaway',
+  JNJ: 'Johnson & Johnson',
+  V: 'Visa Inc.',
+  PG: 'Procter & Gamble',
+  XOM: 'Exxon Mobil',
+  UNH: 'UnitedHealth Group',
+  MA: 'Mastercard Inc.',
+};

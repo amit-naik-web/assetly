@@ -16,6 +16,7 @@
   
   .field-group {
     margin-bottom: 12px;
+    padding-inline: 84px;
   }
   
   .field-label {
@@ -84,7 +85,8 @@
   }
   
   .submit-btn {
-    width: 100%;
+    width: calc(100% - 168px);
+    margin-inline: 84px;
     padding: 9px;
     background: var(--brand);
     color: #ffffff;

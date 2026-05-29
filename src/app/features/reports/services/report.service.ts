@@ -7,7 +7,7 @@ import {
   map, switchMap, scan,
   withLatestFrom, delay, shareReplay,
 } from 'rxjs/operators';
-import { PerformanceRow, ExportRecord } from '../models/report.model';
+import { PerformanceRow } from '../models/report.model';
 import { PortfolioStore } from '../../overview/store/portfolio.store';
 
 const COLOURS: Record<string, string> = {
@@ -71,11 +71,4 @@ export class ReportService {
     return of(blob).pipe(delay(800)); // simulate export time
   }
 
-  getExportHistory(): Observable<ExportRecord[]> {
-    return of([
-      { id: '1', name: 'Monthly performance', date: new Date('2026-05-01'), format: 'CSV', sizeKb: 12 },
-      { id: '2', name: 'Tax summary Q1',       date: new Date('2026-04-03'), format: 'PDF', sizeKb: 48 },
-      { id: '3', name: 'Holdings snapshot',    date: new Date('2026-03-31'), format: 'CSV', sizeKb: 8  },
-    ] as ExportRecord[]).pipe(delay(200));
-  }
 }

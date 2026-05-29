@@ -6,7 +6,11 @@ import {
   } from '@angular/core';
   import { DatePipe } from '@angular/common';
   import { AlertsStore } from '../../store/alerts.store';
-  import { Alert, CONDITION_LABELS } from '../../models/alert.model';
+  import {
+    Alert,
+    CONDITION_LABELS,
+    SYMBOL_COMPANY_NAMES,
+  } from '../../models/alert.model';
   
   @Component({
     selector: 'app-alert-list',
@@ -28,11 +32,16 @@ import {
       return `${alert.progressPct}% of the way to target`;
     }
   
+    getCompanyName(symbol: string): string {
+      return SYMBOL_COMPANY_NAMES[symbol] ?? symbol;
+    }
+
     getAlertAriaLabel(alert: Alert): string {
       const cond = this.conditionLabels[alert.condition];
+      const name = this.getCompanyName(alert.symbol);
       const status = alert.status === 'TRIGGERED'
         ? 'triggered'
         : `watching, ${alert.progressPct}% progress`;
-      return `${alert.symbol} alert: ${cond} $${alert.targetValue}. Status: ${status}.`;
+      return `${name} (${alert.symbol}) alert: ${cond} $${alert.targetValue}. Status: ${status}.`;
     }
   }
