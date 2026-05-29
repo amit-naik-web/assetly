@@ -1,32 +1,59 @@
 <section class="chart-shell" aria-labelledby="chart-heading">
-  <header class="chart-topbar">
-    <h2 id="chart-heading" class="chart-heading">Chart</h2>
-  </header>
+  <h2 id="chart-heading" class="sr-only">Charts</h2>
 
-  <section class="holdings-row">
-    <div class="holdings-list" role="group" aria-label="Select holding symbol">
-      <span class="holdings-label">Holdings</span>
-      @for (sym of chartSymbols; track sym) {
-        <button
-          type="button"
-          class="holding-row"
-          [class.holding-row--active]="symbol() === sym"
-          [attr.aria-pressed]="symbol() === sym"
-          (click)="changeSymbol(sym)"
-        >
-          {{ sym }}
-        </button>
-      }
+  <nav class="chart-symbol-ribbon" aria-label="Chart symbol navigation">
+    <div class="chart-symbol-ribbon__brand">
+      <span class="chart-symbol-ribbon__label" id="chart-symbol-toolbar-label">CHARTS</span>
+      <span class="chart-symbol-ribbon__count">{{ chartSymbols().length }} symbols</span>
     </div>
-  </section>
+
+    <div class="chart-symbol-ribbon__track">
+      <div
+        class="chart-symbol-ribbon__scroller"
+        role="group"
+        aria-labelledby="chart-symbol-toolbar-label"
+      >
+        @for (item of symbolRibbonItems(); track item.symbol) {
+          <button
+            type="button"
+            class="symbol-chip"
+            [class.symbol-chip--active]="symbol() === item.symbol"
+            [attr.aria-pressed]="symbol() === item.symbol"
+            [attr.aria-label]="
+              'View chart for ' +
+              item.symbol +
+              ', day change ' +
+              item.dayChangePct
+            "
+            (click)="changeSymbol(item.symbol)"
+          >
+            <span class="symbol-chip__ticker">{{ item.symbol }}</span>
+            <span
+              class="symbol-chip__change"
+              [class.symbol-chip__change--up]="item.isGain"
+              [class.symbol-chip__change--down]="!item.isGain"
+              aria-hidden="true"
+            >
+              <span class="symbol-chip__arrow">{{ item.isGain ? '↑' : '↓' }}</span>
+              {{ item.dayChangePct }}
+            </span>
+          </button>
+        }
+      </div>
+    </div>
+  </nav>
 
   <div class="chart-layout">
     <section class="left-panel">
       <div class="selected-stock-row">
         <div class="selected-stock-id">
           <div class="selected-stock-meta">
-            <span class="selected-stock-name">{{ symbolNames[symbol()] }}</span>
-            <span class="selected-price-symbol">{{ symbol() }}</span>
+            <span class="selected-stock-name">{{ selectedSymbolName() }}</span>
+            <p class="holding-card__meta selected-stock-subline">
+              <span class="holding-card__symbol">{{ symbol() }}</span>
+              <span class="holding-card__dot" aria-hidden="true">·</span>
+              <span class="holding-card__sector">{{ selectedSector() }}</span>
+            </p>
           </div>
           <div class="selected-stock-price">
             <span class="selected-price">{{ details().lastPrice }}</span>
@@ -96,44 +123,56 @@
       <div class="details-body">
         @if (selectedHoldingCard(); as holding) {
           <section
-            class="holding-context-card"
+            class="holding-card"
             role="region"
             [attr.aria-label]="'Holding details for ' + symbol()"
           >
-            <div class="holding-context-head">
-              <p class="holding-context-title">Holding details</p>
-            </div>
-            <div class="holding-context-grid">
-              <div class="holding-context-item">
-                <span class="holding-context-label">Shares</span>
-                <span class="holding-context-value">{{ holding.shares }}</span>
+            <header class="holding-card__header">
+              <p class="holding-card__eyebrow">Holding details</p>
+            </header>
+
+            <div class="holding-card__hero">
+              <div class="holding-card__hero-metric">
+                <span class="holding-card__label">Position value</span>
+                <p class="holding-card__figure">{{ holding.totalValue }}</p>
               </div>
-              <div class="holding-context-item">
-                <span class="holding-context-label">Sector</span>
-                <span class="holding-context-value">{{ holding.sector }}</span>
-              </div>
-              <div class="holding-context-item">
-                <span class="holding-context-label">Avg cost</span>
-                <span class="holding-context-value">{{ holding.avgCost }}</span>
-              </div>
-              <div class="holding-context-item">
-                <span class="holding-context-label">Current</span>
-                <span class="holding-context-value">{{ holding.currentPrice }}</span>
-              </div>
-              <div class="holding-context-item">
-                <span class="holding-context-label">Value</span>
-                <span class="holding-context-value">{{ holding.totalValue }}</span>
-              </div>
-              <div class="holding-context-item holding-context-item--accent">
-                <span class="holding-context-label">Total gain</span>
-                <span
-                  class="holding-context-value"
-                  [ngClass]="selectedHolding()?.totalGain ?? 0 >= 0 ? 'gain' : 'loss'"
-                >
-                  {{ holding.totalGain }} ({{ holding.totalGainPct }})
-                </span>
+              <div
+                class="holding-card__hero-metric"
+                [class.holding-card__hero-metric--up]="holding.isGain"
+                [class.holding-card__hero-metric--down]="!holding.isGain"
+                role="status"
+                aria-live="polite"
+                [attr.aria-label]="
+                  'Total return ' + holding.totalGain + ', ' + holding.totalGainPct
+                "
+              >
+                <span class="holding-card__label">Total return</span>
+                <p class="holding-card__figure">{{ holding.totalGain }}</p>
+                <p class="holding-card__figure-sub">
+                  <span aria-hidden="true">{{ holding.isGain ? '↑' : '↓' }}</span>
+                  {{ holding.totalGainPct }}
+                </p>
               </div>
             </div>
+
+            <dl class="holding-card__stats">
+              <div class="holding-card__stat">
+                <dt>Shares</dt>
+                <dd>{{ holding.shares }}</dd>
+              </div>
+              <div class="holding-card__stat">
+                <dt>Avg cost</dt>
+                <dd>{{ holding.avgCost }}</dd>
+              </div>
+              <div class="holding-card__stat">
+                <dt>Current price</dt>
+                <dd>{{ holding.currentPrice }}</dd>
+              </div>
+              <div class="holding-card__stat">
+                <dt>Cost basis</dt>
+                <dd>{{ holding.costBasis }}</dd>
+              </div>
+            </dl>
           </section>
         }
 
