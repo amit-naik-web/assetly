@@ -13,9 +13,9 @@
         (click)="exportCsv()"
         [disabled]="exporting()"
         [attr.aria-busy]="exporting() ? 'true' : null"
-        [attr.aria-label]="exporting() ? 'Exporting CSV, please wait' : 'Export portfolio as CSV'"
+        [attr.aria-label]="exporting() ? 'Exporting holdings data, please wait' : 'Export all holdings data as spreadsheet'"
       >
-        @if (exporting()) { Exporting... } @else { Export CSV }
+        @if (exporting()) { Exporting... } @else { Export Data }
       </button>
     </div>
   </header>
