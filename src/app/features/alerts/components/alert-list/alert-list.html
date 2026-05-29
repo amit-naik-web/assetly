@@ -39,14 +39,15 @@
           >
             <div class="alert-icon" aria-hidden="true">◷</div>
             <div class="alert-body">
-              <div class="alert-identity">
-                <div class="alert-name">{{ getCompanyName(alert.symbol) }}</div>
-                <div class="alert-sym">{{ alert.symbol }}</div>
+              <div class="alert-primary">
+                <span class="alert-name">{{ getCompanyName(alert.symbol) }}</span>
+                <span class="alert-target">{{ formatTargetValue(alert) }}</span>
               </div>
-              <div class="alert-cond">
-                {{ conditionLabels[alert.condition] }}
-                ${{ alert.targetValue }}
-              </div>
+              <p class="alert-meta">
+                <span class="alert-sym">{{ alert.symbol }}</span>
+                <span class="alert-meta-dot" aria-hidden="true">·</span>
+                <span class="alert-sector">{{ getSector(alert.symbol) }}</span>
+              </p>
             </div>
             <button
               class="dismiss-btn"
@@ -88,14 +89,15 @@
           >
             <div class="alert-icon triggered-icon" aria-hidden="true">▲</div>
             <div class="alert-body">
-              <div class="alert-identity">
-                <div class="alert-name">{{ getCompanyName(alert.symbol) }}</div>
-                <div class="alert-sym">{{ alert.symbol }}</div>
+              <div class="alert-primary">
+                <span class="alert-name">{{ getCompanyName(alert.symbol) }}</span>
+                <span class="alert-target">{{ formatTargetValue(alert) }}</span>
               </div>
-              <div class="alert-cond">
-                {{ conditionLabels[alert.condition] }}
-                ${{ alert.targetValue }}
-              </div>
+              <p class="alert-meta">
+                <span class="alert-sym">{{ alert.symbol }}</span>
+                <span class="alert-meta-dot" aria-hidden="true">·</span>
+                <span class="alert-sector">{{ getSector(alert.symbol) }}</span>
+              </p>
               <div class="alert-time">
                 Triggered {{ alert.triggeredAt | date:'shortTime' }}
               </div>
