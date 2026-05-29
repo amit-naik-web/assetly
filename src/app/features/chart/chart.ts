@@ -8,7 +8,7 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DecimalPipe, NgClass } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
@@ -20,14 +20,13 @@ import {
   ChartViewMode,
   TimeRange,
   TIME_RANGES,
-  CHART_SYMBOLS,
 } from './models/chart.model';
 
 @Component({
   selector: 'app-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, NgClass, Candlestick],
+  imports: [DecimalPipe, Candlestick],
   templateUrl: './chart.html',
   styleUrl: './chart.scss',
 })
@@ -38,16 +37,41 @@ export class Chart {
   private holdingsService = inject(HoldingsService);
   private destroyRef = inject(DestroyRef);
 
-  readonly timeRanges  = TIME_RANGES;
-  readonly chartSymbols = CHART_SYMBOLS;
-  readonly symbolNames: Record<string, string> = {
-    AAPL: 'Apple',
-    MSFT: 'Microsoft',
-    NVDA: 'NVIDIA',
-    TSLA: 'Tesla',
-    GOOGL: 'Alphabet',
-    META: 'Meta',
-  };
+  readonly timeRanges = TIME_RANGES;
+
+  readonly chartSymbols = computed(() =>
+    (this.holdingsRows() ?? []).map(row => row.symbol),
+  );
+
+  readonly symbolRibbonItems = computed(() =>
+    (this.holdingsRows() ?? []).map(row => ({
+      symbol: row.symbol,
+      dayChangePct: this.formatSignedPercent(row.dayChangePct),
+      isGain: row.dayChangePct >= 0,
+    })),
+  );
+
+  readonly symbolNames = computed(() => {
+    const names: Record<string, string> = {};
+    for (const row of this.holdingsRows() ?? []) {
+      names[row.symbol] = row.companyName;
+    }
+    return names;
+  });
+
+  readonly selectedSymbolName = computed(() => {
+    const sym = this.symbol();
+    return this.symbolNames()[sym] || sym;
+  });
+
+  readonly selectedSector = computed(() => {
+    const holding = this.selectedHolding();
+    if (holding?.sector) {
+      return holding.sector;
+    }
+    const row = this.holdingsRows().find(r => r.symbol === this.symbol());
+    return row?.sector ?? '--';
+  });
   readonly chartViews: { id: ChartViewMode; label: string }[] = [
     { id: 'candlestick', label: 'Candlestick' },
     { id: 'line', label: 'Line' },
@@ -169,7 +193,7 @@ export class Chart {
 
     if (hasSupportedSource && params.symbol === selectedSymbol) {
       return {
-        companyName: params.companyName ?? this.symbolNames[selectedSymbol] ?? selectedSymbol,
+        companyName: params.companyName ?? this.symbolNames()[selectedSymbol] ?? selectedSymbol,
         sector: params.sector ?? '--',
         shares: params.shares,
         avgCost: params.avgCost,
@@ -203,14 +227,14 @@ export class Chart {
       return null;
     }
     return {
-      companyName: holding.companyName,
-      sector: holding.sector,
       shares: this.formatShares(holding.shares),
       avgCost: this.formatCurrency(holding.avgCost),
       currentPrice: this.formatCurrency(holding.currentPrice),
+      costBasis: this.formatCurrency(holding.shares * holding.avgCost),
       totalValue: this.formatCurrency(holding.totalValue),
       totalGain: this.formatSignedCurrency(holding.totalGain),
       totalGainPct: this.formatSignedPercent(holding.totalGainPct),
+      isGain: holding.totalGain >= 0,
     };
   });
 
