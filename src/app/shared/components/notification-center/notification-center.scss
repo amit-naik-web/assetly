@@ -3,25 +3,49 @@
   position: relative;
 }
 
-.notification-center__trigger {
+/* Matches app shell .icon-btn — scoped here because the trigger lives in this component */
+.icon-btn {
   position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--topbar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: var(--surface);
+    color: var(--text-primary);
+    border-color: color-mix(in srgb, var(--border) 70%, var(--text-secondary));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 }
 
-.notification-center__badge {
+.icon-btn__badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
+  top: 3px;
+  right: 3px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
   background: var(--loss);
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  line-height: 16px;
+  line-height: 14px;
   text-align: center;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 .notification-center__backdrop {
