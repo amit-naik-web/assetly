@@ -1,49 +1,44 @@
 <div class="builder-card" role="region" aria-labelledby="builder-heading">
-    <h3 id="builder-heading" class="card-title">Create alert</h3>
-  
+  <h3 id="builder-heading" class="card-title">Create alert</h3>
+
+  <div class="builder-layout">
     <form
+      class="builder-form"
       [formGroup]="form"
       (ngSubmit)="submit()"
       role="form"
       aria-label="Create a new price alert"
       novalidate
     >
-  
-      <!-- Symbol field -->
       <div class="field-group">
         <label for="alert-symbol" class="field-label">
           Stock symbol
           <span class="required-mark" aria-hidden="true">*</span>
           <span class="sr-only">(required)</span>
         </label>
-  
+
         <input
           id="alert-symbol"
           type="text"
           class="field-input"
           formControlName="symbol"
-          placeholder="e.g. AAPL"
+          placeholder="e.g. NVDA"
           autocomplete="on"
           list="symbol-suggestions"
           autocapitalize="characters"
           [ngClass]="{
-            'input-error':   symbolCtrl.invalid && symbolCtrl.touched,
+            'input-error': symbolCtrl.invalid && symbolCtrl.touched,
             'input-success': symbolValid() === true
           }"
           [attr.aria-invalid]="symbolCtrl.invalid && symbolCtrl.touched ? 'true' : null"
-          aria-describedby="symbol-validation symbol-hint"
+          aria-describedby="symbol-validation"
         />
         <datalist id="symbol-suggestions">
           @for (symbol of symbolSuggestions; track symbol) {
             <option [value]="symbol"></option>
           }
         </datalist>
-  
-        <span id="symbol-hint" class="field-hint">
-          US ticker symbol (AAPL, MSFT, NVDA…)
-        </span>
-  
-        <!-- Validation state — ARIA live region -->
+
         <div
           id="symbol-validation"
           role="status"
@@ -52,7 +47,7 @@
           class="validation-msg"
           [ngClass]="{
             'msg-success': symbolValid() === true,
-            'msg-error':   symbolValid() === false,
+            'msg-error': symbolValid() === false,
             'msg-loading': validating()
           }"
         >
@@ -63,7 +58,7 @@
             <span>{{ symbolMessage() }}</span>
           }
         </div>
-  
+
         @if (symbolCtrl.errors?.['invalidSymbol'] && symbolCtrl.touched) {
           <span
             id="symbol-error"
@@ -75,30 +70,44 @@
           </span>
         }
       </div>
-  
-      <!-- Target value field -->
+
       <div class="field-group">
         <label for="alert-target" class="field-label">
-          Target value
+          Target price
           <span class="required-mark" aria-hidden="true">*</span>
           <span class="sr-only">(required)</span>
         </label>
-        <input
-          id="alert-target"
-          type="number"
-          class="field-input"
-          formControlName="targetValue"
-          placeholder="0.00"
-          step="0.01"
-          min="0.01"
-          [attr.aria-invalid]="targetCtrl.invalid && targetCtrl.touched ? 'true' : null"
-          aria-describedby="target-hint"
-        />
+        <div class="target-row">
+          <input
+            id="alert-target"
+            type="number"
+            class="field-input"
+            formControlName="targetValue"
+            placeholder="0.00"
+            step="0.01"
+            min="0.01"
+            [attr.aria-invalid]="targetCtrl.invalid && targetCtrl.touched ? 'true' : null"
+            [attr.aria-describedby]="showLivePanel() ? 'target-delta target-hint' : 'target-hint'"
+          />
+          @if (showLivePanel()) {
+            <span
+              id="target-delta"
+              class="target-delta"
+              [ngClass]="{ 'is-up': targetDeltaUp(), 'is-down': !targetDeltaUp() }"
+              role="status"
+              aria-live="polite"
+              [attr.aria-label]="'Target is ' + targetDeltaLabel() + ' from current price'"
+            >
+              <span aria-hidden="true">{{ targetDeltaUp() ? '▲' : '▼' }}</span>
+              {{ targetDeltaLabel() }}
+            </span>
+          }
+        </div>
         <span id="target-hint" class="field-hint">
-          @if (symbolPrice()) {
-            Current: ${{ symbolPrice()!.toFixed(2) }}
+          @if (showLivePanel()) {
+            Alert fires when price reaches your target — distance updates in the live panel →
           } @else {
-            Enter a price or percentage target
+            Enter target after choosing a valid symbol
           }
         </span>
         @if (targetCtrl.errors?.['min'] && targetCtrl.touched) {
@@ -107,35 +116,64 @@
           </span>
         }
       </div>
-  
-      <!-- Notify via field -->
-      <div class="field-group">
-        <label for="alert-notify" class="field-label">Notify via</label>
-        <select
-          id="alert-notify"
-          class="field-select"
-          formControlName="notifyVia"
+
+      <p class="notify-info" id="alert-notify-info">
+        <span class="notify-info-label">Notification</span>
+        In-app notification
+      </p>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="clear-btn"
+          [disabled]="!canClear() || validating()"
+          (click)="clearForm()"
+          aria-label="Clear form and chart"
         >
-          <option value="TOAST">In-app notification</option>
-          <option value="EMAIL">Email</option>
-          <option value="BOTH">Both</option>
-        </select>
+          Clear
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="form.invalid || validating()"
+          [attr.aria-busy]="validating() ? 'true' : null"
+          aria-label="Create price alert"
+        >
+          @if (validating()) {
+            Validating…
+          } @else {
+            Create alert
+          }
+        </button>
       </div>
-  
-      <!-- Submit -->
-      <button
-        type="submit"
-        class="submit-btn"
-        [disabled]="form.invalid || form.pending"
-        [attr.aria-busy]="form.pending ? 'true' : null"
-        aria-label="Create price alert"
-      >
-        @if (form.pending) {
-          Validating…
-        } @else {
-          Create alert
-        }
-      </button>
-  
     </form>
+
+    <div class="builder-panel-slot">
+      @if (showLivePanel()) {
+        <app-alert-live-panel
+          [symbol]="activeSymbol()"
+          [targetValue]="panelTarget()"
+        />
+      } @else {
+        <div
+          class="live-panel-placeholder"
+          role="region"
+          aria-labelledby="live-panel-placeholder-heading"
+        >
+          <p id="live-panel-placeholder-heading" class="placeholder-title">
+            Live price context
+          </p>
+          <p class="placeholder-message">
+            @if (validating()) {
+              Checking symbol…
+            } @else if (symbolValid() === false && symbolCtrl.value.trim()) {
+              Enter a valid symbol to see live prices and chart
+            } @else {
+              Select a stock to see live prices
+            }
+          </p>
+        </div>
+      }
+    </div>
   </div>
+</div>

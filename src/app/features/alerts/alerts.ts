@@ -7,9 +7,7 @@ import {
 import { AlertsStore } from './store/alerts.store';
 import { AlertBuilder } from './components/alert-builder/alert-builder';
 import { AlertList } from './components/alert-list/alert-list';
-import {
-  Alert,
-} from './models/alert.model';
+import { Alert } from './models/alert.model';
 
 @Component({
   selector: 'app-alerts',
@@ -23,52 +21,39 @@ export class Alerts implements OnInit {
   readonly store = inject(AlertsStore);
 
   ngOnInit() {
-    // Seed with mock alerts
     this.store.loadAlerts([
       {
-        id: 'AAPL-1',
-        symbol: 'AAPL',
-        condition: 'PRICE_ABOVE',
-        targetValue: 210.00,
-        notifyVia: 'TOAST',
-        status: 'TRIGGERED',
-        currentPrice: 213.48,
-        progressPct: 100,
-        createdAt: new Date(),
-        triggeredAt: new Date(),
-      },
-      {
-        id: 'TSLA-1',
+        id: 'TSLA-triggered-demo',
         symbol: 'TSLA',
-        condition: 'PCT_CHANGE_DOWN',
-        targetValue: 2,
+        condition: 'PRICE_ABOVE',
+        targetValue: 245.0,
         notifyVia: 'BOTH',
         status: 'TRIGGERED',
         currentPrice: 247.61,
         progressPct: 100,
-        createdAt: new Date(),
-        triggeredAt: new Date(),
+        createdAt: new Date(Date.now() - 3_600_000),
+        triggeredAt: new Date(Date.now() - 1_800_000),
       },
       {
-        id: 'NVDA-1',
-        symbol: 'NVDA',
-        condition: 'PRICE_BELOW',
-        targetValue: 120.00,
-        notifyVia: 'TOAST',
-        status: 'WATCHING',
-        currentPrice: 134.72,
-        progressPct: 89,
-        createdAt: new Date(),
-      },
-      {
-        id: 'AAPL-2',
+        id: 'AAPL-watch-live',
         symbol: 'AAPL',
         condition: 'PRICE_ABOVE',
-        targetValue: 220.00,
+        targetValue: 214.0,
         notifyVia: 'TOAST',
         status: 'WATCHING',
         currentPrice: 213.48,
-        progressPct: 55,
+        progressPct: 99,
+        createdAt: new Date(),
+      },
+      {
+        id: 'NVDA-watch-live',
+        symbol: 'NVDA',
+        condition: 'PRICE_BELOW',
+        targetValue: 136.0,
+        notifyVia: 'TOAST',
+        status: 'WATCHING',
+        currentPrice: 134.72,
+        progressPct: 99,
         createdAt: new Date(),
       },
     ]);

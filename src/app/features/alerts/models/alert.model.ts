@@ -1,8 +1,4 @@
-export type AlertCondition =
-  | 'PRICE_ABOVE'
-  | 'PRICE_BELOW'
-  | 'PCT_CHANGE_UP'
-  | 'PCT_CHANGE_DOWN';
+export type AlertCondition = 'PRICE_ABOVE' | 'PRICE_BELOW';
 
 export type AlertStatus = 'WATCHING' | 'TRIGGERED';
 export type NotifyMethod = 'TOAST' | 'EMAIL' | 'BOTH';
@@ -28,10 +24,8 @@ export interface WatchlistItem {
 }
 
 export const CONDITION_LABELS: Record<AlertCondition, string> = {
-  PRICE_ABOVE:     'Price above',
-  PRICE_BELOW:     'Price below',
-  PCT_CHANGE_UP:   '% gain exceeds',
-  PCT_CHANGE_DOWN: '% drop exceeds',
+  PRICE_ABOVE: 'Price above',
+  PRICE_BELOW: 'Price below',
 };
 
 export const VALID_SYMBOLS = [

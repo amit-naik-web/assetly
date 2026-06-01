@@ -14,13 +14,20 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { ChartService } from './services/chart.service';
 import { HoldingsService } from '../holdings/services/holdings.service';
+import { PriceFeedService } from '../price-feed/services/price-feed.service';
 import { Candlestick } from './components/candlestick/candlestick';
 import {
   OhlcvCandle,
   ChartViewMode,
   TimeRange,
   TIME_RANGES,
+  TIME_RANGE_LABELS,
 } from './models/chart.model';
+import {
+  buildDisplayCandles,
+  isLiveTimeRange,
+  liveRangeToSparkline,
+} from './utils/live-candle.util';
 
 @Component({
   selector: 'app-chart',
@@ -35,9 +42,12 @@ export class Chart {
   private router  = inject(Router);
   private service = inject(ChartService);
   private holdingsService = inject(HoldingsService);
+  private priceFeed = inject(PriceFeedService);
   private destroyRef = inject(DestroyRef);
 
   readonly timeRanges = TIME_RANGES;
+  readonly timeRangeLabels = TIME_RANGE_LABELS;
+  readonly prices = this.priceFeed.prices;
 
   readonly chartSymbols = computed(() =>
     (this.holdingsRows() ?? []).map(row => row.symbol),
@@ -92,8 +102,20 @@ export class Chart {
   readonly yearCandles = signal<OhlcvCandle[]>([]);
   readonly loading  = signal(false);
 
+  readonly displayCandles = computed(() => {
+    const sym = this.symbol();
+    const range = this.selectedRange();
+    const base = this.candles();
+    const tick = this.prices()[sym];
+    this.priceFeed.priceHistory();
+    const liveHistory = isLiveTimeRange(range)
+      ? this.priceFeed.historyForRange(sym, liveRangeToSparkline(range))
+      : [];
+    return buildDisplayCandles(range, base, tick, liveHistory);
+  });
+
   readonly details = computed(() => {
-    const candles = this.candles();
+    const candles = this.displayCandles();
     const current = candles.length ? candles[candles.length - 1] : null;
     const previous = candles.length > 1 ? candles[candles.length - 2] : null;
     const first = candles.length ? candles[0] : null;
@@ -125,8 +147,9 @@ export class Chart {
   });
 
   readonly rangeStats = computed(() => {
-    const current = this.candles().length ? this.candles()[this.candles().length - 1].close : 0;
-    const dayCandles = this.candles();
+    const display = this.displayCandles();
+    const current = display.length ? display[display.length - 1].close : 0;
+    const dayCandles = display;
     const yearCandles = this.yearCandles();
     const dayLow = dayCandles.length ? Math.min(...dayCandles.map(c => c.low)) : 0;
     const dayHigh = dayCandles.length ? Math.max(...dayCandles.map(c => c.high)) : 0;
@@ -239,6 +262,14 @@ export class Chart {
   });
 
   constructor() {
+    effect(() => {
+      const sym = this.symbol();
+      const tick = this.prices()[sym];
+      if (tick) {
+        this.priceFeed.seedHistory(sym, tick.price);
+      }
+    });
+
     // Use resolver data initially
     effect(() => {
       const resolved = this.resolvedData();
@@ -260,6 +291,12 @@ export class Chart {
   }
 
   private loadCandles(symbol: string, range: TimeRange) {
+    if (isLiveTimeRange(range)) {
+      this.candles.set([]);
+      this.loading.set(false);
+      return;
+    }
+
     this.loading.set(true);
     this.service.getCandles(symbol, range).pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -285,6 +322,14 @@ export class Chart {
 
   changeView(view: ChartViewMode) {
     this.selectedView.set(view);
+  }
+
+  readonly isRefreshing = computed(
+    () => this.priceFeed.refreshInFlight() === this.symbol().toUpperCase(),
+  );
+
+  refreshPrice(): void {
+    this.priceFeed.refreshSymbol(this.symbol());
   }
 
   private formatCurrency(value: number): string {

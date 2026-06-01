@@ -1,0 +1,48 @@
+@if (toast.active(); as payload) {
+  @let text = copy(payload);
+  <div
+    class="toast"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    [attr.aria-label]="text.headline + '. ' + text.detail"
+  >
+    <div class="toast__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.12" />
+        <path
+          d="M8 12.5l2.5 2.5L16 9"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+
+    <div class="toast__content">
+      <p class="toast__headline">{{ text.headline }}</p>
+      <p class="toast__detail">{{ text.detail }}</p>
+    </div>
+
+    <button
+      type="button"
+      class="toast__dismiss"
+      (click)="dismiss()"
+      aria-label="Dismiss"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M18 6 6 18M6 6l12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+
+    <span class="toast__progress" aria-hidden="true"></span>
+  </div>
+}

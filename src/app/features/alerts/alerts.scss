@@ -69,7 +69,8 @@
   min-height: 0;
   display: flex;
   background: var(--al-card-bg);
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: hidden;
 }
 
 .right-col {
@@ -158,6 +159,28 @@
   app-alert-list {
     width: 100%;
     min-width: 0;
+  }
+}
+
+.alerts-shell ::ng-deep app-alert-builder {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.alerts-shell ::ng-deep .left-col .section-body {
+  min-width: 0;
+  overflow-x: visible;
+}
+
+.alerts-shell ::ng-deep app-alert-builder .builder-layout {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 900px) {
+  .alerts-shell ::ng-deep app-alert-builder .builder-layout {
+    flex-wrap: wrap;
   }
 }
 
