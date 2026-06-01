@@ -15,6 +15,7 @@ import {
 import { inject } from '@angular/core';
 import { Alert } from '../models/alert.model';
 import { AlertToastService } from '../../../core/services/alert-toast.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 export const AlertsStore = signalStore(
   { providedIn: 'root' },
@@ -34,6 +35,7 @@ export const AlertsStore = signalStore(
 
   withMethods((store) => {
     const alertToast = inject(AlertToastService);
+    const notifications = inject(NotificationService);
 
     return {
     loadAlerts(alerts: Alert[]) {
@@ -73,6 +75,7 @@ export const AlertsStore = signalStore(
         }),
       );
 
+      notifications.push(id, symbol, message);
       alertToast.show(message, symbol);
     },
 

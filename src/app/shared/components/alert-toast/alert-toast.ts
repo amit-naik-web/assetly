@@ -3,12 +3,8 @@ import {
   AlertToastPayload,
   AlertToastService,
 } from '../../../core/services/alert-toast.service';
-
-export interface ToastCopy {
-  symbol: string;
-  headline: string;
-  detail: string;
-}
+import { formatNotificationCopy } from '../../../core/utils/notification-message.util';
+import { NotificationCopy } from '../../../core/models/notification.model';
 
 @Component({
   selector: 'app-alert-toast',
@@ -24,28 +20,7 @@ export class AlertToast {
     this.toast.dismiss();
   }
 
-  copy(payload: AlertToastPayload): ToastCopy {
-    const symbol = payload.symbol || payload.message.split(' ')[0] || '';
-    const prices = payload.message.match(/\$[\d,.]+/g) ?? [];
-    const price = prices[0] ?? '';
-    const target = prices[1] ?? '';
-
-    if (payload.message.includes('fell to')) {
-      return {
-        symbol,
-        headline: 'Price alert triggered',
-        detail: target
-          ? `${symbol} dropped to ${price} · target ${target}`
-          : `${symbol} dropped to ${price}`,
-      };
-    }
-
-    return {
-      symbol,
-      headline: 'Price alert triggered',
-      detail: target
-        ? `${symbol} reached ${price} · target ${target}`
-        : `${symbol} reached ${price}`,
-    };
+  copy(payload: AlertToastPayload): NotificationCopy {
+    return formatNotificationCopy(payload.message, payload.symbol);
   }
 }
