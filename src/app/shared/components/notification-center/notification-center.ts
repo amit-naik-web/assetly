@@ -63,9 +63,6 @@ export class NotificationCenter {
   }
 
   unreadBadge(count: number): string {
-    if (count <= 0) {
-      return '';
-    }
     return count > 9 ? '9+' : String(count);
   }
 
