@@ -1,0 +1,327 @@
+<aside
+
+  class="live-panel"
+
+  role="complementary"
+
+  [attr.aria-label]="symbol() + ' live price context for your alert'"
+
+>
+
+  <header class="live-header">
+
+    <div class="live-title">
+      <div class="live-symbol-row">
+        <span class="live-symbol">{{ symbol() }}</span>
+        <button
+          type="button"
+          class="price-refresh-btn"
+          [class.price-refresh-btn--spinning]="isRefreshing()"
+          [attr.aria-label]="'Refresh live price for ' + symbol()"
+          [attr.aria-busy]="isRefreshing()"
+          [disabled]="isRefreshing()"
+          (click)="refreshPrice()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 9.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"
+            />
+          </svg>
+        </button>
+      </div>
+      <span class="live-company">{{ companyName() }}</span>
+    </div>
+
+    <div class="live-price-block">
+
+      <span class="live-price" aria-hidden="true">${{ currentPrice().toFixed(2) }}</span>
+
+      <span
+
+        class="live-change"
+
+        [ngClass]="{ 'is-up': isUp(), 'is-down': !isUp() }"
+
+        aria-hidden="true"
+
+      >
+
+        {{ isUp() ? '▲' : '▼' }}
+
+        {{ isUp() ? '+' : '' }}{{ changePct().toFixed(2) }}%
+
+      </span>
+
+    </div>
+
+  </header>
+
+
+
+  <div
+
+    role="status"
+
+    aria-live="polite"
+
+    aria-atomic="true"
+
+    class="sr-only"
+
+  >
+
+    {{ liveAnnouncement() }}
+
+  </div>
+
+
+
+  <figure
+
+    class="chart-wrap"
+
+    [attr.aria-label]="chartTrend()"
+
+    (pointerleave)="clearHover()"
+
+  >
+
+    @if (chartLayout().points.length >= 2) {
+
+      <div
+
+        class="chart-tooltip"
+
+        [style.left.%]="tooltipLeftPct()"
+
+        aria-hidden="true"
+
+      >
+
+        @if (activePoint(); as pt) {
+
+          <span class="tooltip-date">{{ pt.dateLabel }}</span>
+
+          <span class="tooltip-price">${{ pt.price.toFixed(2) }}</span>
+
+          <span class="tooltip-range">
+
+            H ${{ pt.high.toFixed(2) }} · L ${{ pt.low.toFixed(2) }}
+
+          </span>
+
+        }
+
+      </div>
+
+
+
+      <svg
+
+        class="chart-svg"
+
+        [attr.viewBox]="chartViewBox"
+
+        preserveAspectRatio="none"
+
+        tabindex="0"
+
+        role="application"
+
+        [attr.aria-label]="symbol() + ' price chart for ' + selectedRange() + '. Use arrow keys to inspect points.'"
+
+        aria-describedby="chart-instructions chart-live-summary"
+
+        (pointermove)="onPointerMove($event)"
+
+        (keydown)="handleChartKey($event)"
+
+      >
+
+        <defs>
+
+          <linearGradient id="chart-area-gradient" x1="0" y1="0" x2="0" y2="1">
+
+            <stop offset="0%" stop-color="var(--brand, #185fa5)" stop-opacity="0.22" />
+
+            <stop offset="100%" stop-color="var(--brand, #185fa5)" stop-opacity="0.02" />
+
+          </linearGradient>
+
+        </defs>
+
+
+
+        @if (chartAreaPath()) {
+
+          <path
+
+            class="chart-area"
+
+            [attr.d]="chartAreaPath()"
+
+            fill="url(#chart-area-gradient)"
+
+          />
+
+        }
+
+
+
+        @if (showTargetLine() && targetLineY() !== null) {
+
+          <line
+
+            class="target-line"
+
+            [attr.x1]="chartPadX"
+
+            [attr.y1]="targetLineY()"
+
+            [attr.x2]="chartDotCx"
+
+            [attr.y2]="targetLineY()"
+
+          />
+
+        }
+
+
+
+        @if (chartPath()) {
+
+          <path class="chart-line" fill="none" [attr.d]="chartPath()" />
+
+        }
+
+
+
+        @if (crosshairX() !== null) {
+
+          <line
+
+            class="chart-crosshair"
+
+            [attr.x1]="crosshairX()"
+
+            [attr.y1]="chartPadY"
+
+            [attr.x2]="crosshairX()"
+
+            [attr.y2]="chartHeight - chartPadY"
+
+          />
+
+        }
+
+
+
+        @if (activePoint(); as pt) {
+
+          <circle
+
+            class="chart-hover-dot"
+
+            [attr.cx]="pt.x"
+
+            [attr.cy]="pt.y"
+
+            r="4"
+
+          />
+
+        }
+
+
+
+        @if (chartPath()) {
+
+          <circle
+
+            class="chart-end-dot"
+
+            [attr.cx]="chartDotCx"
+
+            [attr.cy]="chartEndY()"
+
+            r="3"
+
+          />
+
+        }
+
+      </svg>
+
+
+
+      <p id="chart-instructions" class="sr-only">
+
+        Hover or focus the chart and use left and right arrow keys to move between price points. Press Escape to return to the latest price.
+
+      </p>
+
+      <figcaption id="chart-live-summary" class="chart-caption">
+
+        {{ chartSummary() }}
+
+        @if (!isLive()) {
+
+          · delayed quote
+
+        }
+
+        @if (showTargetLine()) {
+
+          · target ${{ targetValue().toFixed(2) }}
+
+        }
+
+      </figcaption>
+
+    } @else {
+
+      <div class="chart-loading" role="status" aria-busy="true">
+
+        Loading {{ selectedRange() }} chart…
+
+      </div>
+
+    }
+
+  </figure>
+
+
+
+  <div class="chart-toolbar">
+
+    <div class="range-pills" role="group" aria-label="Chart time range">
+
+      @for (range of timeRanges; track range) {
+
+        <button
+
+          type="button"
+
+          class="range-pill"
+
+          [class.range-pill--active]="selectedRange() === range"
+
+          [attr.aria-pressed]="selectedRange() === range"
+
+          (click)="changeRange(range)"
+
+        >
+
+          {{ timeRangeLabels[range] }}
+
+        </button>
+
+      }
+
+    </div>
+
+  </div>
+
+</aside>
+
+

@@ -228,6 +228,12 @@
   min-height: 56px;
 }
 
+.selected-stock-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .selected-stock-name {
   display: inline-flex;
   align-items: center;

@@ -14,10 +14,32 @@ export interface Indicator {
     formatted: string;
 }
 
-export type TimeRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'All';
+/** `1m` / `1h` = live tick windows; `1M` = one month. */
+export type TimeRange = '1m' | '1h' | '1W' | '1M' | '3M' | '6M' | '1Y' | 'All';
 export type ChartViewMode = 'candlestick' | 'line';
 
-export const TIME_RANGES: TimeRange[] = ['1W', '1M', '3M', '6M', '1Y', 'All'];
+export const TIME_RANGES: TimeRange[] = [
+  '1m',
+  '1h',
+  '1W',
+  '1M',
+  '3M',
+  '6M',
+  '1Y',
+  'All',
+];
+
+/** Accessible labels for range pills (`1M` = month, `1m` = minute). */
+export const TIME_RANGE_LABELS: Record<TimeRange, string> = {
+  '1m': '1m',
+  '1h': '1h',
+  '1W': '1W',
+  '1M': '1M',
+  '3M': '3M',
+  '6M': '6M',
+  '1Y': '1Y',
+  All: 'All',
+};
 
 export const BASE_PRICES: Record<string, number> = {
     AAPL: 213.48,

@@ -1,35 +1,15 @@
-<!-- Triggered alerts — assertive live region -->
-<div
-  role="alert"
-  aria-live="assertive"
-  aria-atomic="true"
-  class="sr-only"
-  aria-label="Triggered alert notifications"
->
-  @if (store.triggeredCount() > 0) {
-    {{ store.triggeredCount() }} alert{{ store.triggeredCount() > 1 ? 's' : '' }} triggered
-  }
-</div>
-
-<div
-  class="list-wrap"
-  role="region"
-  aria-label="Active alerts"
-  [class.list-wrap--single]="!(store.watching().length && store.triggered().length)"
->
-
-  <!-- Watching section -->
-  @if (store.watching().length) {
-    <section class="alert-section" role="region" aria-label="Watching alerts">
-      <div class="section-toolbar">
-        <div class="section-toolbar-heading">
-          <span class="section-toolbar-label">
-            WATCHING
-            <span class="section-count">{{ store.watching().length }} total</span>
-          </span>
-        </div>
+<div class="list-wrap" role="region" aria-label="Active alerts">
+  <section class="alert-section" role="region" aria-label="Watching alerts">
+    <div class="section-toolbar">
+      <div class="section-toolbar-heading">
+        <span class="section-toolbar-label">
+          WATCHING
+          <span class="section-count">{{ store.watching().length }} total</span>
+        </span>
       </div>
+    </div>
 
+    @if (store.watching().length) {
       <ul class="alert-list alert-list--scroll" aria-label="Watching alerts" role="list">
         @for (alert of store.watching(); track alert.id) {
           <li
@@ -37,49 +17,67 @@
             role="listitem"
             [attr.aria-label]="getAlertAriaLabel(alert)"
           >
-            <div class="alert-icon" aria-hidden="true">◷</div>
             <div class="alert-body">
               <div class="alert-primary">
+                <span class="alert-icon alert-icon--watching" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </span>
                 <span class="alert-name">{{ getCompanyName(alert.symbol) }}</span>
-                <span class="alert-target">{{ formatTargetValue(alert) }}</span>
+                <div class="alert-trailing">
+                  <span class="alert-target">{{ formatTargetValue(alert) }}</span>
+                  <button
+                    type="button"
+                    class="dismiss-btn"
+                    (click)="dismiss(alert.id)"
+                    [attr.aria-label]="'Remove ' + getCompanyName(alert.symbol) + ' alert'"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.75"
+                         stroke-linecap="round" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
               <p class="alert-meta">
                 <span class="alert-sym">{{ alert.symbol }}</span>
                 <span class="alert-meta-dot" aria-hidden="true">·</span>
                 <span class="alert-sector">{{ getSector(alert.symbol) }}</span>
               </p>
+              <p class="alert-watch-detail">
+                <span>{{ getConditionLabel(alert) }}</span>
+                <span class="alert-meta-dot" aria-hidden="true">·</span>
+                <span>Now {{ formatCurrentPrice(alert) }}</span>
+              </p>
             </div>
-            <button
-              class="dismiss-btn"
-              (click)="dismiss(alert.id)"
-              [attr.aria-label]="'Remove ' + getCompanyName(alert.symbol) + ' alert'"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
           </li>
         }
       </ul>
-    </section>
-  }
-
-  <!-- Triggered section -->
-  @if (store.triggered().length) {
-    <section class="alert-section" role="region" aria-label="Triggered alerts">
-      <div class="section-toolbar">
-        <div class="section-toolbar-heading">
-          <span class="section-toolbar-label triggered-label">
-            <span class="trigger-dot" aria-hidden="true"></span>
-            TRIGGERED
-            <span class="section-count">{{ store.triggered().length }} total</span>
-          </span>
-        </div>
+    } @else {
+      <div class="section-empty" role="status">
+        <p>Add alerts to track them.</p>
       </div>
+    }
+  </section>
 
+  <section class="alert-section" role="region" aria-label="Triggered alerts">
+    <div class="section-toolbar">
+      <div class="section-toolbar-heading">
+        <span class="section-toolbar-label triggered-label">
+          <span class="trigger-dot" aria-hidden="true"></span>
+          TRIGGERED
+          <span class="section-count">{{ store.triggered().length }} total</span>
+        </span>
+      </div>
+    </div>
+
+    @if (store.triggered().length) {
       <ul class="alert-list alert-list--scroll" aria-label="Triggered alerts" role="list">
         @for (alert of store.triggered(); track alert.id) {
           <li
@@ -87,11 +85,30 @@
             role="listitem"
             [attr.aria-label]="getAlertAriaLabel(alert)"
           >
-            <div class="alert-icon triggered-icon" aria-hidden="true">▲</div>
             <div class="alert-body">
               <div class="alert-primary">
+                <span class="alert-icon alert-icon--triggered" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 5.5 19.5 18.5H4.5L12 5.5z"/>
+                  </svg>
+                </span>
                 <span class="alert-name">{{ getCompanyName(alert.symbol) }}</span>
-                <span class="alert-target">{{ formatTargetValue(alert) }}</span>
+                <div class="alert-trailing">
+                  <span class="alert-target">{{ formatTargetValue(alert) }}</span>
+                  <button
+                    type="button"
+                    class="dismiss-btn"
+                    (click)="dismiss(alert.id)"
+                    [attr.aria-label]="'Dismiss ' + getCompanyName(alert.symbol) + ' alert'"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.75"
+                         stroke-linecap="round" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
               <p class="alert-meta">
                 <span class="alert-sym">{{ alert.symbol }}</span>
@@ -102,30 +119,13 @@
                 Triggered {{ alert.triggeredAt | date:'shortTime' }}
               </div>
             </div>
-            <button
-              class="dismiss-btn"
-              (click)="dismiss(alert.id)"
-              [attr.aria-label]="'Dismiss ' + getCompanyName(alert.symbol) + ' alert'"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2"
-                   aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
           </li>
         }
       </ul>
-    </section>
-  }
-
-  <!-- Empty state -->
-  @if (!store.entities().length) {
-    <div class="empty-state" role="status">
-      <p>No alerts yet.</p>
-      <p>Create one using the form.</p>
-    </div>
-  }
-
+    } @else {
+      <div class="section-empty" role="status">
+        <p>No triggered alerts to show.</p>
+      </div>
+    }
+  </section>
 </div>
