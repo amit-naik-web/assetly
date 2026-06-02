@@ -44,15 +44,42 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+Component accessibility tests live in `*.a11y.spec.ts` files and use [axe-core](https://github.com/dequelabs/axe-core) via [vitest-axe](https://github.com/chaance/vitest-axe):
 
 ```bash
-ng e2e
+npm run test:a11y
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Accessibility testing (Playwright + axe)
+
+Full documentation: [docs/accessibility-testing.md](docs/accessibility-testing.md) (why, file map, how it works). Roadmap: [docs/accessibility-plan.md](docs/accessibility-plan.md).
+
+E2E accessibility scans use [Playwright](https://playwright.dev/) with [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright). Tests fail on **critical** and **serious** violations only.
+
+Start the app (or let Playwright start it automatically):
+
+```bash
+npm start
+```
+
+Run route-level accessibility checks:
+
+```bash
+npm run e2e:a11y
+```
+
+Open the HTML report after a run:
+
+```bash
+npm run a11y:report
+```
+
+Other Playwright commands:
+
+```bash
+npm run e2e       # all e2e tests
+npm run e2e:ui    # interactive UI mode
+```
 
 ## Additional Resources
 
