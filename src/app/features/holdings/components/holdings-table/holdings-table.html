@@ -172,7 +172,6 @@
         @for (row of sortedRows(); track row.id; let i = $index) {
           <tr
             [attr.aria-rowindex]="i + 1"
-            role="link"
             tabindex="0"
             (click)="openHoldingChart(row)"
             (keydown)="onRowKeydown($event, row)"
