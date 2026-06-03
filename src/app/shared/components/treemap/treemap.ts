@@ -70,18 +70,28 @@ export class Treemap implements AfterViewInit, OnDestroy {
         return Math.abs(pct) < 0.1;
     }
 
-    /**
-     * Continuous fill strength (36–70%) via token color-mix — smooth visual
-     * gradient while keeping WCAG-safe foreground on every tile.
-     */
-    fillMixPct(pct: number): number {
+    /** Matches legacy D3 dead-zone; same thresholds as pre–color-mix intensity tiers. */
+    leafIntensity(pct: number): 'low' | 'mid' | 'high' {
         const abs = Math.abs(pct);
-        if (abs < 0.1) {
+        if (abs >= 2) {
+            return 'high';
+        }
+        if (abs >= 0.5) {
+            return 'mid';
+        }
+        return 'low';
+    }
+
+    /** Per-tile `color-mix` strength — discrete low / mid / high (not a continuous ramp). */
+    fillMixPct(pct: number): number {
+        if (this.isNeutralPct(pct)) {
             return 0;
         }
-        const clamped = Math.min(4, abs);
-        const t = (clamped - 0.1) / (4 - 0.1);
-        return Math.round(36 + t * 34);
+        const tier = this.leafIntensity(pct);
+        const lightMix = { low: 28, mid: 44, high: 58 } as const;
+        const darkMix = { low: 50, mid: 64, high: 72 } as const;
+        const palette = this.theme() === 'light' ? lightMix : darkMix;
+        return palette[tier];
     }
 
     readonly activeLeaf = computed(() => {

@@ -44,8 +44,9 @@
     --treemap-leaf-neutral-bg: #e8e6df;
     --treemap-gain-fill-base: #ffffff;
     --treemap-loss-fill-base: #ffffff;
-    --treemap-leaf-pct-gain: color-mix(in srgb, var(--text-primary, #2C2C2A) 45%, var(--gain, #0F6E56));
-    --treemap-leaf-pct-loss: color-mix(in srgb, var(--text-primary, #2C2C2A) 45%, var(--loss, #A32D2D));
+    /* Tile fill encodes direction; pct uses primary text for 4.5:1 on pale color-mix fills. */
+    --treemap-leaf-pct-gain: var(--text-primary, #2C2C2A);
+    --treemap-leaf-pct-loss: var(--text-primary, #2C2C2A);
   }
 
   &:focus-visible {
@@ -129,7 +130,7 @@
 
   .treemap--light &:hover,
   .treemap--light &.leaf-hovered {
-    filter: brightness(0.97);
+    filter: brightness(1.04);
   }
 
   &.leaf-focused {
@@ -186,7 +187,7 @@
   }
 }
 
-.leaf-pct {
+.treemap-host:not(.treemap--light) .leaf-pct {
   opacity: 0.95;
 }
 

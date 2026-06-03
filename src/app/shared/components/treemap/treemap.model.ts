@@ -29,7 +29,7 @@ export interface TreemapLeaf {
   pctFontWeight: number;
   labelLayout: 'stacked' | 'compact' | 'symbol-only' | 'none';
   pctLabel: string;
-  /** 0–100 — per-tile `color-mix` strength for smooth gain/loss fills. */
+  /** 0 or 28/44/58 (light) / 50/64/72 (dark) — per-tile gain/loss fill mix %. */
   fillMixPct: number;
 }
 
