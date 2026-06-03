@@ -7,9 +7,7 @@ export interface PriceTick {
   timestamp: number;
 }
 
-export interface PriceMap {
-  [symbol: string]: PriceTick;
-}
+export type PriceMap = Record<string, PriceTick>;
 
 /** Rolling window point for sparklines (last 60 ticks per symbol). */
 export interface PriceHistoryPoint {

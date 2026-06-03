@@ -21,6 +21,19 @@ import { TreemapNode, TreemapLeaf, TreemapSector } from './treemap.model';
 
 const SECTOR_HEADER_HEIGHT = 18;
 
+interface TreemapHierarchyDatum {
+    name: string;
+    value?: number;
+    sector?: string;
+    children?: TreemapHierarchyDatum[];
+    id?: string;
+    symbol?: string;
+    companyName?: string;
+    totalValue?: number;
+    dayChangePct?: number;
+    currentPrice?: number;
+}
+
 @Component({
     selector: 'app-treemap',
     standalone: true,
@@ -107,7 +120,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
         // Group by sector
         const grouped = d3.group(data, d => d.sector);
 
-        const hierarchyData = {
+        const hierarchyData: TreemapHierarchyDatum = {
             name: 'root',
             children: Array.from(grouped, ([sector, items]) => ({
                 name: sector,
@@ -118,11 +131,11 @@ export class Treemap implements AfterViewInit, OnDestroy {
             })),
         };
 
-        const root = d3.hierarchy<any>(hierarchyData)
+        const root = d3.hierarchy<TreemapHierarchyDatum>(hierarchyData)
             .sum(d => d.value ?? 0)
             .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
-        const treemapLayout = d3.treemap<any>()
+        const treemapLayout = d3.treemap<TreemapHierarchyDatum>()
             .size([W, H])
             .padding(0)
             .paddingTop(d => (d.depth === 1 ? SECTOR_HEADER_HEIGHT : 0))
@@ -138,7 +151,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
             : 0;
 
         // Extract sector rectangles
-        const sectorNodes: TreemapSector[] = ((root.children ?? []) as HierarchyRectangularNode<any>[]).map(c => ({
+        const sectorNodes: TreemapSector[] = ((root.children ?? []) as HierarchyRectangularNode<TreemapHierarchyDatum>[]).map(c => ({
             name: c.data.name,
             x0: c.x0!, y0: c.y0!,
             x1: c.x1!, y1: c.y1!,
@@ -152,7 +165,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
 
         // Extract leaf rectangles — clamp below sector header band
         const leafNodes: TreemapLeaf[] = (
-            root.leaves() as HierarchyRectangularNode<any>[]
+            root.leaves() as HierarchyRectangularNode<TreemapHierarchyDatum>[]
         ).flatMap(leaf => {
             const sector = sectorByName.get(leaf.data.sector);
             let y0 = leaf.y0!;
@@ -347,7 +360,15 @@ export class Treemap implements AfterViewInit, OnDestroy {
             this.focusIdx.set(idx);
             this.announceLeaf(idx);
         }
-        this.nodeClicked.emit(leaf as any);
+        this.nodeClicked.emit({
+            id: leaf.id,
+            symbol: leaf.symbol,
+            companyName: leaf.companyName,
+            sector: leaf.sector,
+            totalValue: leaf.totalValue,
+            dayChangePct: leaf.dayChangePct,
+            currentPrice: leaf.currentPrice,
+        });
     }
 
     onLeafDblClick(leaf: TreemapLeaf, event: Event) {

@@ -27,9 +27,13 @@ We intentionally **did not** use `axe-playwright` (older community wrapper; low 
 
 **Angular-native pieces** (`@angular/cdk/a11y`, semantic HTML, ARIA in templates) are for **building** accessible UI. **axe + Playwright/Vitest** are for **verifying** it automatically.
 
-### Two layers on purpose
+### Three layers on purpose
 
 ```text
+┌─────────────────────────────────────────────────────────────┐
+│  ESLint (angular-eslint templateAccessibility)              │
+│  Edit-time · src/**/*.html · missing alt, click-only divs   │
+└─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
 │  E2E (Playwright + @axe-core/playwright)                    │
 │  Full page in real browser · routes · lazy-loaded features   │
@@ -40,22 +44,26 @@ We intentionally **did not** use `axe-playwright` (older community wrapper; low 
 └─────────────────────────────────────────────────────────────┘
 ```
 
+- **ESLint** catches template mistakes before you run tests (static analysis).
 - **E2E** catches integration issues (layout, defer blocks, route-level landmarks).
 - **Component** catches issues in one widget without navigating the whole app.
 
-Both share the same **severity gate**: tests fail only on **critical** and **serious** axe impacts (moderate/minor can be fixed later).
+axe-based layers share the same **severity gate**: fail only on **critical** and **serious** impacts (moderate/minor can be fixed later).
 
 ---
 
 ## What was installed
 
-Dev dependencies added to `package.json`:
+Key dev dependencies in `package.json`:
 
 ```json
 "@playwright/test": "^1.60.0",
 "@axe-core/playwright": "^4.11.3",
 "axe-core": "^4.12.0",
-"vitest-axe": "^0.1.0"
+"vitest-axe": "^0.1.0",
+"angular-eslint": "21.4.0",
+"eslint": "^10.3.0",
+"typescript-eslint": "8.59.2"
 ```
 
 Chromium for Playwright (one-time):
@@ -79,19 +87,25 @@ npx playwright install chromium
 | [`src/testing/run-axe.ts`](../src/testing/run-axe.ts) | `runAxe(container)` + `assertNoSeriousViolations()` for component tests |
 | [`src/app/shared/components/not-found/not-found.a11y.spec.ts`](../src/app/shared/components/not-found/not-found.a11y.spec.ts) | Starter component a11y test (minimal surface) |
 | [`src/app/features/alerts/components/alert-builder/alert-builder.a11y.spec.ts`](../src/app/features/alerts/components/alert-builder/alert-builder.a11y.spec.ts) | High-value form UI with mocked services |
+| [`src/app/features/holdings/components/holdings-table/holdings-table.a11y.spec.ts`](../src/app/features/holdings/components/holdings-table/holdings-table.a11y.spec.ts) | Sortable holdings table with gain/loss rows |
+| [`src/app/features/chart/chart.a11y.spec.ts`](../src/app/features/chart/chart.a11y.spec.ts) | Chart shell + candlestick keyboard host |
+| [`src/app/features/alerts/components/alert-list/alert-list.a11y.spec.ts`](../src/app/features/alerts/components/alert-list/alert-list.a11y.spec.ts) | Watching + triggered alert cards |
+| [`src/app/features/price-feed/components/price-table/price-table.a11y.spec.ts`](../src/app/features/price-feed/components/price-table/price-table.a11y.spec.ts) | Live prices table, sort, pagination |
 
 ### Modified files
 
 | Path | Change |
 |------|--------|
-| [`package.json`](../package.json) | New npm scripts: `e2e`, `e2e:a11y`, `e2e:ui`, `a11y:report`, `test:a11y` |
-| [`angular.json`](../angular.json) | `test.options.setupFiles` → vitest-axe setup |
+| [`package.json`](../package.json) | New npm scripts: `e2e`, `e2e:a11y`, `e2e:ui`, `a11y:report`, `test:a11y`, `lint` |
+| [`eslint.config.js`](../eslint.config.js) | Angular ESLint flat config; `templateAccessibility` on `src/**/*.html` |
+| [`angular.json`](../angular.json) | Vitest `setupFiles`; `lint` target via `@angular-eslint/builder:lint` |
 | [`tsconfig.spec.json`](../tsconfig.spec.json) | Include `src/testing/**/*.ts` |
 | [`README.md`](../README.md) | How to run a11y tests |
-| [`todo.md`](../todo.md) | Item 5 marked done for infra (expand coverage separately) |
+| [`todo.md`](../todo.md) | Item 5 marked done (automated a11y infra + component coverage) |
 | [`src/app/features/overview/overview.html`](../src/app/features/overview/overview.html) | Loading skeleton: `role="status"` (axe: `aria-label` on plain `div`) |
 | [`src/app/features/price-feed/price-feed.html`](../src/app/features/price-feed/price-feed.html) | Same for heatmap loading skeleton |
 | [`src/app/features/holdings/components/holdings-table/holdings-table.html`](../src/app/features/holdings/components/holdings-table/holdings-table.html) | Removed `role="link"` on `<tr>` (conflicted with `aria-rowindex`) |
+| [`src/app/shared/components/treemap/treemap.scss`](../src/app/shared/components/treemap/treemap.scss) | Token-based leaf/header colors for WCAG contrast on overview treemap |
 
 ### Already present (reused)
 
@@ -167,21 +181,40 @@ sequenceDiagram
 
 **`not-found` spec:** No dependencies — baseline that the pipeline works.
 
-**`alert-builder` spec:** Mocks injected so the form renders without live WebSocket/chart:
+**`alert-builder` spec:** Mocks `PriceFeedService`, `AlertValidatorService`, `AlertEngineService` so the form renders without live feeds.
 
-- `PriceFeedService` — `prices` signal, stub `seedHistory`
-- `AlertValidatorService` — `validateSymbol` → `of({ valid: false })`
-- `AlertEngineService` — no-op `evaluateNewAlert`
+**`holdings-table` spec:** Mock `HoldingRow[]` (gainer, loser, flat) + `provideRouter([])`.
 
-`AlertsStore` and real child templates still load; live panel stays hidden until symbol is valid.
+**`chart` spec:** Mock `ActivatedRoute` (resolver `ohlcv`), `ChartService`, `HoldingsService`, `PriceFeedService`; `await fixture.whenStable()` before axe.
+
+**`alert-list` spec:** Seed `AlertsStore` with watching + triggered alerts; stub toast/notification services.
+
+**`price-table` spec:** Full `TRACKED_SYMBOLS` price map + `BehaviorSubject` for `latestTick$`.
 
 **CLI note:** Angular 21 uses `ng test --watch=false`, not `--run`. Filtering uses `--include=**/*.a11y.spec.ts`.
+
+---
+
+### ESLint (template accessibility)
+
+[`eslint.config.js`](../eslint.config.js) applies `angular.configs.templateRecommended` and `angular.configs.templateAccessibility` to `**/*.html`, plus TypeScript recommended rules on `**/*.ts`.
+
+Run before or after UI edits:
+
+```bash
+npm run lint
+```
+
+Install the **ESLint** extension in VS Code/Cursor for inline diagnostics on templates.
 
 ---
 
 ## How to run
 
 ```bash
+# Template a11y (ESLint — missing alt, click-only divs, invalid ARIA)
+npm run lint
+
 # Component accessibility only
 npm run test:a11y
 
@@ -201,19 +234,27 @@ npm run e2e:ui
 
 ---
 
-## Current test status
+## Current test status (June 2026)
 
-| Suite | Result (at time of setup) |
-|-------|---------------------------|
-| `npm run test:a11y` | **2/2 passed** (`not-found`, `alert-builder`) |
-| `npm run e2e:a11y` | **5/6 passed** |
+| Suite | Result | Specs / routes |
+|-------|--------|----------------|
+| `npm run lint` | **Pass** | All `src/**/*.ts` and `src/**/*.html` |
+| `npm run test:a11y` | **6/6 passed** | `not-found`, `alert-builder`, `holdings-table`, `chart`, `alert-list`, `price-table` |
+| `npm run e2e:a11y` | **6/6 passed** | `/overview`, `/prices`, `/holdings`, `/alerts`, `/reports`, `/chart/AAPL` |
 
-**Known failure:** `/overview` — **color-contrast** on treemap loss/gain leaves (dynamic inline colors from D3). Serious impact; needs treemap color scale or text styling fix, not a test harness change.
+Re-run locally after UI changes:
 
-**Fixes already applied** so other routes pass:
+```bash
+npm run lint && npm run test:a11y && npm run e2e:a11y
+```
 
-1. Loading skeletons: `role="status"` so `aria-busy` / `aria-label` are valid on loading placeholders.
-2. Holdings table: removed `role="link"` from `<tr>` so `aria-rowindex` is valid for table rows.
+**Fixes applied** (automated suites green):
+
+1. Overview treemap: CSS token-based leaf/header colors (`treemap.scss`) — resolved serious `color-contrast` on `/overview`.
+2. Loading skeletons: `role="status"` so `aria-busy` / `aria-label` are valid on loading placeholders.
+3. Holdings table: removed `role="link"` from `<tr>` so `aria-rowindex` is valid for table rows.
+
+**Optional follow-up:** Log **moderate/minor** axe findings from a report run into GitHub issues or `todo.md` (not blocking).
 
 ---
 
@@ -239,13 +280,14 @@ npm run e2e:ui
 
 ---
 
-## What was explicitly out of scope
+## What remains optional
 
-- GitHub Actions CI workflow (fail PR on serious/critical)
-- ESLint `@angular-eslint/template-accessibility`
-- `*.a11y.spec.ts` for every feature component
-- Fixing all moderate/minor axe findings
-- Full treemap contrast remediation (documented as follow-up)
+| Item | Status |
+|------|--------|
+| GitHub Actions CI (`.github/workflows/a11y.yml`) | Not added — optional for solo dev; see [accessibility-plan.md](./accessibility-plan.md) Phase 3.1 |
+| `*.a11y.spec.ts` for every shared component | Not required — six high-risk widgets covered |
+| Failing CI on moderate/minor axe | Out of scope |
+| Phase 4 manual QA (keyboard, SR, zoom) | Ongoing — [accessibility-manual-testing.md](./accessibility-manual-testing.md) |
 
 ---
 
@@ -264,6 +306,7 @@ Use automation as a **regression gate**; use manual checks for UX and announceme
 ## Quick reference: package roles
 
 ```text
+angular-eslint      → templateAccessibility + tsRecommended (eslint.config.js)
 playwright          → opens browser, navigates, waits
 @axe-core/playwright → runs axe-core inside Playwright page
 axe-core            → WCAG rules (violations, impact levels)
@@ -273,4 +316,4 @@ vitest-axe          → axe() + matchers in Vitest/jsdom
 
 ---
 
-*Last updated: June 2026 — matches Playwright + @axe-core/playwright + vitest-axe setup in Assetly.*
+*Last updated: June 2026 — ESLint template-a11y, 6/6 component specs, 6/6 E2E routes.*
