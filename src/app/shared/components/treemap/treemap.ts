@@ -12,6 +12,8 @@ import {
     OnDestroy,
     HostListener,
     inject,
+    Injector,
+    afterNextRender,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
@@ -21,18 +23,19 @@ import { TreemapNode, TreemapLeaf, TreemapSector } from './treemap.model';
 
 const SECTOR_HEADER_HEIGHT = 18;
 
-interface TreemapHierarchyDatum {
+type TreemapHierarchyLeaf = TreemapNode & { value: number };
+
+interface TreemapSectorDatum {
     name: string;
-    value?: number;
-    sector?: string;
-    children?: TreemapHierarchyDatum[];
-    id?: string;
-    symbol?: string;
-    companyName?: string;
-    totalValue?: number;
-    dayChangePct?: number;
-    currentPrice?: number;
+    children: TreemapHierarchyLeaf[];
 }
+
+interface TreemapHierarchyRoot {
+    name: string;
+    children: TreemapSectorDatum[];
+}
+
+type TreemapHierarchyDatum = TreemapHierarchyRoot | TreemapSectorDatum | TreemapHierarchyLeaf;
 
 @Component({
     selector: 'app-treemap',
@@ -53,6 +56,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
     @ViewChild('host') hostEl!: ElementRef<HTMLDivElement>;
 
     private router = inject(Router);
+    private injector = inject(Injector);
     private resizeOb!: ResizeObserver;
 
     readonly leaves = signal<TreemapLeaf[]>([]);
@@ -61,18 +65,25 @@ export class Treemap implements AfterViewInit, OnDestroy {
     readonly hoverNode = signal<TreemapLeaf | null>(null);
     readonly announcement = signal('');
 
+    /** Matches legacy D3 scale dead-zone (-0.1 … 0.1). */
     isNeutralPct(pct: number): boolean {
         return Math.abs(pct) < 0.1;
     }
 
-    leafIntensity(pct: number): 'low' | 'mid' | 'high' {
+    /**
+     * Continuous fill strength (36–70%) via token color-mix — smooth visual
+     * gradient while keeping WCAG-safe foreground on every tile.
+     */
+    fillMixPct(pct: number): number {
         const abs = Math.abs(pct);
-        if (abs >= 2) return 'high';
-        if (abs >= 0.5) return 'mid';
-        return 'low';
+        if (abs < 0.1) {
+            return 0;
+        }
+        const clamped = Math.min(4, abs);
+        const t = (clamped - 0.1) / (4 - 0.1);
+        return Math.round(36 + t * 34);
     }
 
-    // Active (focused) leaf
     readonly activeLeaf = computed(() => {
         const idx = this.focusIdx();
         if (idx < 0) return null;
@@ -84,20 +95,27 @@ export class Treemap implements AfterViewInit, OnDestroy {
             const data = this.nodes();
             this.theme();
             this.height();
-            if (data.length) {
-                setTimeout(() => this.compute(), 0);
+
+            if (!data.length) {
+                this.sectors.set([]);
+                this.leaves.set([]);
+                this.focusIdx.set(-1);
+                return;
             }
+
+            afterNextRender(() => this.scheduleCompute(), { injector: this.injector });
         });
     }
 
     ngAfterViewInit() {
         if (this.nodes().length) {
-            this.compute();
+            this.scheduleCompute();
         }
 
-        // Re-compute on container resize
         this.resizeOb = new ResizeObserver(() => {
-            if (this.nodes().length) this.compute();
+            if (this.nodes().length) {
+                this.scheduleCompute();
+            }
         });
         if (this.hostEl?.nativeElement) {
             this.resizeOb.observe(this.hostEl.nativeElement);
@@ -108,31 +126,46 @@ export class Treemap implements AfterViewInit, OnDestroy {
         this.resizeOb?.disconnect();
     }
 
+    private scheduleCompute(): void {
+        requestAnimationFrame(() => {
+            this.compute();
+            const el = this.hostEl?.nativeElement;
+            const needsRetry =
+                el &&
+                this.nodes().length > 0 &&
+                (el.clientWidth === 0 || this.leaves().length === 0);
+            if (needsRetry) {
+                requestAnimationFrame(() => this.compute());
+            }
+        });
+    }
+
     private compute() {
         const el = this.hostEl?.nativeElement;
         if (!el) return;
 
-        const W = el.clientWidth || 600;
+        const W = el.clientWidth;
         const H = this.height() || el.clientHeight || 380;
         const data = this.nodes();
-        if (!data.length) return;
+        if (!W || !data.length) return;
 
-        // Group by sector
         const grouped = d3.group(data, d => d.sector);
 
-        const hierarchyData: TreemapHierarchyDatum = {
+        const hierarchyData: TreemapHierarchyRoot = {
             name: 'root',
             children: Array.from(grouped, ([sector, items]) => ({
                 name: sector,
-                children: items.map(item => ({
-                    ...item,
-                    value: item.totalValue,
-                })),
+                children: items.map(
+                    (item): TreemapHierarchyLeaf => ({
+                        ...item,
+                        value: item.totalValue,
+                    }),
+                ),
             })),
         };
 
         const root = d3.hierarchy<TreemapHierarchyDatum>(hierarchyData)
-            .sum(d => d.value ?? 0)
+            .sum(d => ('value' in d ? d.value : 0))
             .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
         const treemapLayout = d3.treemap<TreemapHierarchyDatum>()
@@ -150,8 +183,9 @@ export class Treemap implements AfterViewInit, OnDestroy {
             ? Math.max(...data.map(d => (d.totalValue / totalValue) * 100))
             : 0;
 
-        // Extract sector rectangles
-        const sectorNodes: TreemapSector[] = ((root.children ?? []) as HierarchyRectangularNode<TreemapHierarchyDatum>[]).map(c => ({
+        const sectorNodes: TreemapSector[] = (
+            (root.children ?? []) as HierarchyRectangularNode<TreemapSectorDatum>[]
+        ).map(c => ({
             name: c.data.name,
             x0: c.x0!, y0: c.y0!,
             x1: c.x1!, y1: c.y1!,
@@ -163,9 +197,8 @@ export class Treemap implements AfterViewInit, OnDestroy {
             sectorNodes.map(s => [s.name, s]),
         );
 
-        // Extract leaf rectangles — clamp below sector header band
         const leafNodes: TreemapLeaf[] = (
-            root.leaves() as HierarchyRectangularNode<TreemapHierarchyDatum>[]
+            root.leaves() as HierarchyRectangularNode<TreemapHierarchyLeaf>[]
         ).flatMap(leaf => {
             const sector = sectorByName.get(leaf.data.sector);
             let y0 = leaf.y0!;
@@ -182,7 +215,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
                 return [];
             }
 
-            const pct = leaf.data.dayChangePct ?? 0;
+            const pct = leaf.data.dayChangePct;
             const portfolioPct = totalValue > 0
                 ? (leaf.data.totalValue / totalValue) * 100
                 : 0;
@@ -211,6 +244,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
                 portfolioPct,
                 labelLayout,
                 pctLabel,
+                fillMixPct: this.fillMixPct(pct),
                 ...typography,
             }];
         });
@@ -230,7 +264,6 @@ export class Treemap implements AfterViewInit, OnDestroy {
         const area = w * h;
         const aspect = w / Math.max(h, 1);
 
-        // Horizontal only on physically small or wide-strip tiles (e.g. CAT)
         const needsCompact =
             h < 28 ||
             area < 900 ||
@@ -239,7 +272,6 @@ export class Treemap implements AfterViewInit, OnDestroy {
         if (needsCompact && canCompact) {
             return 'compact';
         }
-        // Vertical when there is room for two readable lines
         if (w >= 28 && h >= 28) {
             return 'stacked';
         }
@@ -291,7 +323,6 @@ export class Treemap implements AfterViewInit, OnDestroy {
         return { fontSize, fontWeight, pctFontSize, pctFontWeight };
     }
 
-    // ── Keyboard navigation ──────────────────────────────
     @HostListener('keydown', ['$event'])
     handleKey(e: KeyboardEvent) {
         const len = this.leaves().length;
@@ -360,15 +391,7 @@ export class Treemap implements AfterViewInit, OnDestroy {
             this.focusIdx.set(idx);
             this.announceLeaf(idx);
         }
-        this.nodeClicked.emit({
-            id: leaf.id,
-            symbol: leaf.symbol,
-            companyName: leaf.companyName,
-            sector: leaf.sector,
-            totalValue: leaf.totalValue,
-            dayChangePct: leaf.dayChangePct,
-            currentPrice: leaf.currentPrice,
-        });
+        this.nodeClicked.emit(this.toTreemapNode(leaf));
     }
 
     onLeafDblClick(leaf: TreemapLeaf, event: Event) {
@@ -386,6 +409,18 @@ export class Treemap implements AfterViewInit, OnDestroy {
 
     private navigate(leaf: TreemapLeaf) {
         this.router.navigate(['/chart', leaf.symbol]);
+    }
+
+    private toTreemapNode(leaf: TreemapLeaf): TreemapNode {
+        return {
+            id: leaf.id,
+            symbol: leaf.symbol,
+            companyName: leaf.companyName,
+            sector: leaf.sector,
+            totalValue: leaf.totalValue,
+            dayChangePct: leaf.dayChangePct,
+            currentPrice: leaf.currentPrice,
+        };
     }
 
     getAriaLabel(leaf: TreemapLeaf): string {

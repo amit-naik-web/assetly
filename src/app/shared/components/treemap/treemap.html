@@ -1,169 +1,164 @@
-<!-- ARIA live region for keyboard announcements -->
-<div
-  role="status"
-  aria-live="polite"
-  aria-atomic="true"
-  class="sr-only"
->{{ announcement() }}</div>
-
-<!-- Treemap container -->
-<div
-  #host
-  class="treemap-host"
-  [class.treemap--light]="theme() === 'light'"
-  [style.height.px]="height()"
-  role="application"
-  aria-label="Portfolio treemap. Block size represents position value. Colour represents day change. Use arrow keys to navigate."
-  aria-describedby="treemap-instructions"
-  tabindex="0"
->
-  <p id="treemap-instructions" class="sr-only">
-    Arrow keys navigate between positions.
-    Click selects a position. Double-click or press Enter opens its chart.
-    Escape clears focus.
-  </p>
-
-  <!-- SVG is aria-hidden — all info via live region and aria-labels on divs -->
+<div class="treemap-root">
   <div
-    class="treemap-inner"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    class="sr-only"
+  >{{ announcement() }}</div>
+
+  <div
+    #host
+    class="treemap-host"
+    [class.treemap--light]="theme() === 'light'"
     [style.height.px]="height()"
-    aria-hidden="true"
+    role="application"
+    aria-label="Portfolio treemap. Block size represents position value. Colour represents day change. Use arrow keys to navigate."
+    aria-describedby="treemap-instructions"
+    tabindex="0"
   >
+    <p id="treemap-instructions" class="sr-only">
+      Arrow keys navigate between positions.
+      Click selects a position. Double-click or press Enter opens its chart.
+      Escape clears focus.
+    </p>
 
-    <!-- Sector headers — titles sit above the card grid, not inside tiles -->
-
-    @for (sector of sectors(); track sector.name) {
-      @if ((sector.x1 - sector.x0) > 40) {
-        <div
-        class="sector-header"
-        [style.left.px]="sector.x0"
-        [style.top.px]="sector.y0"
-        [style.width.px]="sector.x1 - sector.x0"
-        [style.height.px]="sector.headerHeight"
-      >
-        <span class="sector-header-label">{{ sector.name }}</span>
-      </div>
+    <div
+      class="treemap-inner"
+      [style.height.px]="height()"
+      aria-hidden="true"
+    >
+      @for (sector of sectors(); track sector.name) {
+        @if ((sector.x1 - sector.x0) > 40) {
+          <div
+            class="sector-header"
+            [style.left.px]="sector.x0"
+            [style.top.px]="sector.y0"
+            [style.width.px]="sector.x1 - sector.x0"
+            [style.height.px]="sector.headerHeight"
+          >
+            <span class="sector-header-label">{{ sector.name }}</span>
+          </div>
+        }
       }
-    }
 
-    <!-- Leaf nodes -->
-    @for (leaf of leaves(); track leaf.id; let i = $index) {
-      <div
-        class="leaf"
-        [class.leaf-neutral]="isNeutralPct(leaf.dayChangePct)"
-        [class.leaf-gain]="!isNeutralPct(leaf.dayChangePct) && leaf.dayChangePct >= 0"
-        [class.leaf-loss]="!isNeutralPct(leaf.dayChangePct) && leaf.dayChangePct < 0"
-        [class.leaf-intensity-low]="!isNeutralPct(leaf.dayChangePct) && leafIntensity(leaf.dayChangePct) === 'low'"
-        [class.leaf-intensity-mid]="!isNeutralPct(leaf.dayChangePct) && leafIntensity(leaf.dayChangePct) === 'mid'"
-        [class.leaf-intensity-high]="!isNeutralPct(leaf.dayChangePct) && leafIntensity(leaf.dayChangePct) === 'high'"
-        [class.leaf-focused]="focusIdx() === i"
-        [class.leaf-hovered]="hoverNode()?.id === leaf.id"
-        [style.left.px]="leaf.x0"
-        [style.top.px]="leaf.y0"
-        [style.width.px]="leaf.width"
-        [style.height.px]="leaf.height"
-        [style.cursor]="navigable() ? 'pointer' : 'default'"
-        (click)="onLeafClick(leaf)"
-        (dblclick)="onLeafDblClick(leaf, $event)"
-        (mouseenter)="onLeafHover(leaf)"
-        (mouseleave)="onLeafHover(null)"
-      >
-        @switch (leaf.labelLayout) {
-          @case ('stacked') {
-            <span
-              class="leaf-symbol"
-              [style.fontSize.px]="leaf.fontSize"
-              [style.fontWeight]="leaf.fontWeight"
-            >
-              {{ leaf.symbol }}
-            </span>
-            <span
-              class="leaf-pct"
-              [style.fontSize.px]="leaf.pctFontSize"
-              [style.fontWeight]="leaf.pctFontWeight"
-            >
-              {{ leaf.pctLabel }}
-            </span>
-          }
-          @case ('compact') {
-            <span
-              class="leaf-compact"
-              [style.fontSize.px]="leaf.fontSize"
-              [style.fontWeight]="leaf.fontWeight"
-            >
-              <span class="leaf-compact-symbol">{{ leaf.symbol }}</span>
+      @for (leaf of leaves(); track leaf.id; let i = $index) {
+        <div
+          class="leaf"
+          [class.leaf-neutral]="isNeutralPct(leaf.dayChangePct)"
+          [class.leaf-gain]="!isNeutralPct(leaf.dayChangePct) && leaf.dayChangePct >= 0"
+          [class.leaf-loss]="!isNeutralPct(leaf.dayChangePct) && leaf.dayChangePct < 0"
+          [class.leaf-focused]="focusIdx() === i"
+          [class.leaf-hovered]="hoverNode()?.id === leaf.id"
+          [style.left.px]="leaf.x0"
+          [style.top.px]="leaf.y0"
+          [style.width.px]="leaf.width"
+          [style.height.px]="leaf.height"
+          [style.--leaf-fill-mix.%]="leaf.fillMixPct"
+          [style.cursor]="navigable() ? 'pointer' : 'default'"
+          (click)="onLeafClick(leaf)"
+          (dblclick)="onLeafDblClick(leaf, $event)"
+          (mouseenter)="onLeafHover(leaf)"
+          (mouseleave)="onLeafHover(null)"
+        >
+          @switch (leaf.labelLayout) {
+            @case ('stacked') {
               <span
-                class="leaf-compact-pct"
+                class="leaf-symbol"
+                [style.fontSize.px]="leaf.fontSize"
+                [style.fontWeight]="leaf.fontWeight"
+              >
+                {{ leaf.symbol }}
+              </span>
+              <span
+                class="leaf-pct"
+                [class.leaf-pct--gain]="leaf.dayChangePct >= 0"
+                [class.leaf-pct--loss]="leaf.dayChangePct < 0"
                 [style.fontSize.px]="leaf.pctFontSize"
                 [style.fontWeight]="leaf.pctFontWeight"
-              >{{ leaf.pctLabel }}</span>
-            </span>
+              >
+                {{ leaf.pctLabel }}
+              </span>
+            }
+            @case ('compact') {
+              <span
+                class="leaf-compact"
+                [style.fontSize.px]="leaf.fontSize"
+                [style.fontWeight]="leaf.fontWeight"
+              >
+                <span class="leaf-compact-symbol">{{ leaf.symbol }}</span>
+                <span
+                  class="leaf-compact-pct"
+                  [class.leaf-pct--gain]="leaf.dayChangePct >= 0"
+                  [class.leaf-pct--loss]="leaf.dayChangePct < 0"
+                  [style.fontSize.px]="leaf.pctFontSize"
+                  [style.fontWeight]="leaf.pctFontWeight"
+                >{{ leaf.pctLabel }}</span>
+              </span>
+            }
+            @case ('symbol-only') {
+              <span
+                class="leaf-symbol"
+                [style.fontSize.px]="leaf.fontSize"
+                [style.fontWeight]="leaf.fontWeight"
+              >
+                {{ leaf.symbol }}
+              </span>
+            }
           }
-          @case ('symbol-only') {
-            <span
-              class="leaf-symbol"
-              [style.fontSize.px]="leaf.fontSize"
-              [style.fontWeight]="leaf.fontWeight"
-            >
-              {{ leaf.symbol }}
-            </span>
-          }
-        }
+        </div>
+      }
+    </div>
+
+    <div class="a11y-overlay" aria-label="Portfolio positions">
+      @for (leaf of leaves(); track leaf.id; let i = $index) {
+        <button
+          type="button"
+          class="a11y-leaf"
+          [class.a11y-leaf--gain]="leaf.dayChangePct >= 0"
+          [class.a11y-leaf--loss]="leaf.dayChangePct < 0"
+          [style.left.px]="leaf.x0"
+          [style.top.px]="leaf.y0"
+          [style.width.px]="leaf.width"
+          [style.height.px]="leaf.height"
+          [attr.aria-label]="getAriaLabel(leaf)"
+          [attr.aria-pressed]="focusIdx() === i"
+          (focus)="focusIdx.set(i); announceLeaf(i)"
+          tabindex="-1"
+        ></button>
+      }
+    </div>
+  </div>
+
+  @if (hoverNode()) {
+    <div
+      class="tooltip"
+      role="tooltip"
+      [attr.aria-label]="getAriaLabel(hoverNode()!)"
+    >
+      <div class="tt-symbol">{{ hoverNode()!.symbol }}</div>
+      <div class="tt-name">{{ hoverNode()!.companyName }}</div>
+      <div class="tt-row">
+        <span class="tt-label">Price</span>
+        <span class="tt-val">${{ hoverNode()!.currentPrice.toFixed(2) }}</span>
       </div>
-    }
-
-  </div>
-
-  <!-- Accessible overlay — focusable leaf buttons for keyboard users -->
-  <div class="a11y-overlay" aria-label="Portfolio positions">
-    @for (leaf of leaves(); track leaf.id; let i = $index) {
-      <button
-        class="a11y-leaf"
-        [class.a11y-leaf--gain]="leaf.dayChangePct >= 0"
-        [class.a11y-leaf--loss]="leaf.dayChangePct < 0"
-        [style.left.px]="leaf.x0"
-        [style.top.px]="leaf.y0"
-        [style.width.px]="leaf.width"
-        [style.height.px]="leaf.height"
-        [attr.aria-label]="getAriaLabel(leaf)"
-        [attr.aria-pressed]="focusIdx() === i"
-        (focus)="focusIdx.set(i); announceLeaf(i)"
-        tabindex="-1"
-      ></button>
-    }
-  </div>
+      <div class="tt-row">
+        <span class="tt-label">Day</span>
+        <span
+          class="tt-val"
+          [ngClass]="hoverNode()!.dayChangePct >= 0 ? 'gain' : 'loss'"
+        >
+          {{ hoverNode()!.dayChangePct >= 0 ? '+' : '' }}{{ hoverNode()!.dayChangePct.toFixed(2) }}%
+        </span>
+      </div>
+      <div class="tt-row">
+        <span class="tt-label">Value</span>
+        <span class="tt-val">
+          ${{ hoverNode()!.totalValue.toLocaleString('en-US', { maximumFractionDigits: 0 }) }}
+        </span>
+      </div>
+      @if (navigable()) {
+        <div class="tt-hint">Double-click to view chart</div>
+      }
+    </div>
+  }
 </div>
-
-<!-- Tooltip -->
-@if (hoverNode()) {
-  <div
-    class="tooltip"
-    role="tooltip"
-    [attr.aria-label]="getAriaLabel(hoverNode()!)"
-  >
-    <div class="tt-symbol">{{ hoverNode()!.symbol }}</div>
-    <div class="tt-name">{{ hoverNode()!.companyName }}</div>
-    <div class="tt-row">
-      <span class="tt-label">Price</span>
-      <span class="tt-val">${{ hoverNode()!.currentPrice.toFixed(2) }}</span>
-    </div>
-    <div class="tt-row">
-      <span class="tt-label">Day</span>
-      <span
-        class="tt-val"
-        [ngClass]="hoverNode()!.dayChangePct >= 0 ? 'gain' : 'loss'"
-      >
-        {{ hoverNode()!.dayChangePct >= 0 ? '+' : '' }}{{ hoverNode()!.dayChangePct.toFixed(2) }}%
-      </span>
-    </div>
-    <div class="tt-row">
-      <span class="tt-label">Value</span>
-      <span class="tt-val">
-        ${{ hoverNode()!.totalValue.toLocaleString('en-US', { maximumFractionDigits: 0 }) }}
-      </span>
-    </div>
-    @if (navigable()) {
-      <div class="tt-hint">Double-click to view chart</div>
-    }
-  </div>
-}

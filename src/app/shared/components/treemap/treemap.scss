@@ -1,275 +1,293 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.treemap-root {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
 .treemap-host {
-    position: relative;
-    width: 100%;
-    outline: none;
-    overflow: hidden;
-    --treemap-separator: #5f5e5a;
+  position: relative;
+  width: 100%;
+  outline: none;
+  overflow: hidden;
+  --treemap-separator: #5f5e5a;
+  --treemap-bg: var(--treemap-separator);
+  --treemap-header-bg: #0a0a0a;
+  --treemap-border: rgba(255, 255, 255, 0.12);
+  --treemap-header-text: rgba(255, 255, 255, 0.85);
+  --treemap-focus-gain: var(--gain, #0F6E56);
+  --treemap-focus-loss: var(--loss, #A32D2D);
+  --treemap-leaf-fg: #ffffff;
+  --treemap-leaf-neutral-bg: #1a1a1a;
+  --treemap-gain-fill-base: #1a1a1a;
+  --treemap-loss-fill-base: #1a1a1a;
+  --treemap-leaf-pct-gain: color-mix(in srgb, #ffffff 62%, var(--gain, #0F6E56));
+  --treemap-leaf-pct-loss: color-mix(in srgb, #ffffff 62%, var(--loss, #A32D2D));
+  background: var(--treemap-bg);
+
+  &.treemap--light {
+    --treemap-separator: #96948c;
     --treemap-bg: var(--treemap-separator);
-    --treemap-header-bg: #0a0a0a;
-    --treemap-border: rgba(255, 255, 255, 0.12);
-    --treemap-header-text: rgba(255, 255, 255, 0.85);
-    --treemap-focus-gain: var(--gain, #0F6E56);
-    --treemap-focus-loss: var(--loss, #A32D2D);
-    --treemap-leaf-fg: #ffffff;
-    --treemap-leaf-neutral-bg: #3a3a3a;
-    --treemap-leaf-gain-low: color-mix(in srgb, var(--gain, #0F6E56) 42%, #1a1a1a);
-    --treemap-leaf-gain-mid: color-mix(in srgb, var(--gain, #0F6E56) 58%, #121212);
-    --treemap-leaf-gain-high: color-mix(in srgb, var(--gain, #0F6E56) 72%, #0a0a0a);
-    --treemap-leaf-loss-low: color-mix(in srgb, var(--loss, #A32D2D) 42%, #1a1a1a);
-    --treemap-leaf-loss-mid: color-mix(in srgb, var(--loss, #A32D2D) 58%, #121212);
-    --treemap-leaf-loss-high: color-mix(in srgb, var(--loss, #A32D2D) 72%, #0a0a0a);
-    background: var(--treemap-bg);
-
-    &.treemap--light {
-      --treemap-separator: #96948c;
-      --treemap-bg: var(--treemap-separator);
-      --treemap-header-bg: var(--surface, #F4F3EE);
-      --treemap-border: var(--treemap-separator);
-      --treemap-header-text: var(--text-secondary, #5F5E5A);
-      --treemap-leaf-fg: var(--text-primary, #2C2C2A);
-      --treemap-leaf-neutral-bg: var(--surface, #F4F3EE);
-      --treemap-leaf-gain-low: color-mix(in srgb, var(--gain, #0F6E56) 36%, #ffffff);
-      --treemap-leaf-gain-mid: color-mix(in srgb, var(--gain, #0F6E56) 52%, #ffffff);
-      --treemap-leaf-gain-high: color-mix(in srgb, var(--gain, #0F6E56) 68%, #ffffff);
-      --treemap-leaf-loss-low: color-mix(in srgb, var(--loss, #A32D2D) 36%, #ffffff);
-      --treemap-leaf-loss-mid: color-mix(in srgb, var(--loss, #A32D2D) 52%, #ffffff);
-      --treemap-leaf-loss-high: color-mix(in srgb, var(--loss, #A32D2D) 68%, #ffffff);
-    }
-  
-    &:focus-visible {
-      outline: 2px solid var(--text-primary, #2C2C2A);
-      outline-offset: 2px;
-    }
-  }
-  
-  .treemap-inner {
-    position: relative;
-    width: 100%;
-  }
-  
-  /* Sector header band — sits on treemap background, above coloured tiles */
-  .sector-header {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    padding: 0 6px;
-    background: var(--treemap-header-bg);
-    pointer-events: none;
-    z-index: 2;
-    box-sizing: border-box;
-    overflow: hidden;
-    border-bottom: 1px solid var(--treemap-separator);
-  }
-  
-  .sector-header-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--treemap-header-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 16px;
+    --treemap-header-bg: var(--surface, #F4F3EE);
+    --treemap-border: var(--treemap-separator);
+    --treemap-header-text: var(--text-secondary, #5F5E5A);
+    --treemap-leaf-fg: var(--text-primary, #2C2C2A);
+    --treemap-leaf-neutral-bg: #e8e6df;
+    --treemap-gain-fill-base: #ffffff;
+    --treemap-loss-fill-base: #ffffff;
+    --treemap-leaf-pct-gain: color-mix(in srgb, var(--text-primary, #2C2C2A) 45%, var(--gain, #0F6E56));
+    --treemap-leaf-pct-loss: color-mix(in srgb, var(--text-primary, #2C2C2A) 45%, var(--loss, #A32D2D));
   }
 
-  .sector-frame {
-    position: absolute;
-    border: 1px solid var(--treemap-border);
-    box-sizing: border-box;
-    pointer-events: none;
-    z-index: 1;
+  &:focus-visible {
+    outline: 2px solid var(--text-primary, #2C2C2A);
+    outline-offset: 2px;
   }
-  
-  /* Leaf block — token fills + fixed foreground for WCAG contrast */
-  .leaf {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    padding: 2px 4px;
-    overflow: hidden;
-    border-radius: 2px;
-    box-sizing: border-box;
-    color: var(--treemap-leaf-fg);
-    transition: filter 0.12s;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    z-index: 1;
+}
 
-    &.leaf-neutral {
-      background: var(--treemap-leaf-neutral-bg);
-    }
+.treemap-inner {
+  position: relative;
+  width: 100%;
+}
 
-    &.leaf-gain.leaf-intensity-low { background: var(--treemap-leaf-gain-low); }
-    &.leaf-gain.leaf-intensity-mid { background: var(--treemap-leaf-gain-mid); }
-    &.leaf-gain.leaf-intensity-high { background: var(--treemap-leaf-gain-high); }
+.sector-header {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  background: var(--treemap-header-bg);
+  pointer-events: none;
+  z-index: 2;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-bottom: 1px solid var(--treemap-separator);
+}
 
-    &.leaf-loss.leaf-intensity-low { background: var(--treemap-leaf-loss-low); }
-    &.leaf-loss.leaf-intensity-mid { background: var(--treemap-leaf-loss-mid); }
-    &.leaf-loss.leaf-intensity-high { background: var(--treemap-leaf-loss-high); }
+.sector-header-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--treemap-header-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 16px;
+}
 
-    &:hover,
-    &.leaf-hovered {
-      filter: brightness(1.08);
-      z-index: 3;
-    }
+.leaf {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  box-sizing: border-box;
+  color: var(--treemap-leaf-fg);
+  transition: filter 0.12s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1;
 
-    .treemap--light &:hover,
-    .treemap--light &.leaf-hovered {
-      filter: brightness(0.97);
-    }
+  &.leaf-neutral {
+    background: var(--treemap-leaf-neutral-bg);
+  }
 
-    &.leaf-focused {
-      z-index: 6;
+  &.leaf-gain {
+    background: color-mix(
+      in srgb,
+      var(--gain, #0F6E56) var(--leaf-fill-mix, 48%),
+      var(--treemap-gain-fill-base)
+    );
+  }
 
-      &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border: 3px solid transparent;
-        border-radius: inherit;
-        pointer-events: none;
-        box-sizing: border-box;
-      }
-    }
+  &.leaf-loss {
+    background: color-mix(
+      in srgb,
+      var(--loss, #A32D2D) var(--leaf-fill-mix, 48%),
+      var(--treemap-loss-fill-base)
+    );
+  }
 
-    &.leaf-focused.leaf-gain::after {
-      border-color: var(--treemap-focus-gain);
-    }
+  &:hover,
+  &.leaf-hovered {
+    filter: brightness(1.15);
+    z-index: 3;
+  }
 
-    &.leaf-focused.leaf-loss::after {
-      border-color: var(--treemap-focus-loss);
+  .treemap--light &:hover,
+  .treemap--light &.leaf-hovered {
+    filter: brightness(0.97);
+  }
+
+  &.leaf-focused {
+    z-index: 6;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 3px solid transparent;
+      border-radius: inherit;
+      pointer-events: none;
+      box-sizing: border-box;
     }
   }
-  
-  .leaf-symbol,
-  .leaf-pct {
-    position: relative;
-    z-index: 1;
-    max-width: 100%;
-    text-align: center;
+
+  &.leaf-focused.leaf-gain::after {
+    border-color: var(--treemap-focus-gain);
   }
 
-  .leaf-symbol {
-    line-height: 1.1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  &.leaf-focused.leaf-loss::after {
+    border-color: var(--treemap-focus-loss);
+  }
+}
+
+.leaf-symbol,
+.leaf-pct {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  text-align: center;
+}
+
+.leaf-symbol {
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.leaf-pct,
+.leaf-compact-pct {
+  line-height: 1.1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  &.leaf-pct--gain {
+    color: var(--treemap-leaf-pct-gain);
   }
 
-  .leaf-pct {
-    line-height: 1.1;
-    white-space: nowrap;
-    opacity: 0.9;
-    font-variant-numeric: tabular-nums;
+  &.leaf-pct--loss {
+    color: var(--treemap-leaf-pct-loss);
   }
+}
 
-  .leaf-compact {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    max-width: 100%;
-    line-height: 1.15;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 2px;
-  }
+.leaf-pct {
+  opacity: 0.95;
+}
 
-  .leaf-compact-symbol {
-    font-weight: inherit;
-    flex-shrink: 0;
-    letter-spacing: -0.01em;
-  }
+.leaf-compact {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  max-width: 100%;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
 
-  .leaf-compact-pct {
-    opacity: 0.95;
-    font-variant-numeric: tabular-nums;
-    flex-shrink: 0;
-    letter-spacing: -0.01em;
-  }
-  
-  /* Accessible overlay — transparent buttons over visual blocks */
-  .a11y-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-  
-  .a11y-leaf {
-    position: absolute;
-    background: transparent;
-    border: none;
-    padding: 0;
-    cursor: inherit;
-    pointer-events: none;
-    opacity: 0;
-    -webkit-tap-highlight-color: transparent;
+.leaf-compact-symbol {
+  font-weight: inherit;
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+
+.leaf-compact-pct {
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+
+.a11y-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.a11y-leaf {
+  position: absolute;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: inherit;
+  pointer-events: none;
+  opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+
+  &:focus,
+  &:focus-visible {
     outline: none !important;
     box-shadow: none !important;
+  }
+}
 
-    &:focus,
-    &:focus-visible {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-  }
-  
-  /* Tooltip */
-  .tooltip {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 0;
-    background: var(--nav-bg, #0C2340);
-    color: #ffffff;
-    border-radius: 8px;
-    padding: 10px 14px;
-    min-width: 160px;
-    pointer-events: none;
-    z-index: 100;
-    font-size: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  }
-  
-  .tt-symbol {
-    font-size: 15px;
-    font-weight: 700;
-    font-family: 'SF Mono', monospace;
-    margin-bottom: 2px;
-  }
-  
-  .tt-name {
-    font-size: 10px;
-    opacity: 0.6;
-    margin-bottom: 8px;
-  }
-  
-  .tt-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 2px 0;
-  }
-  
-  .tt-label { opacity: 0.6; }
-  
-  .tt-val {
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-  
-  .tt-hint {
-    margin-top: 8px;
-    font-size: 10px;
-    opacity: 0.5;
-    text-align: center;
-  }
-  
-  .gain { color: var(--gain, #0F6E56); }
-  .loss { color: var(--loss, #A32D2D); }
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 12px;
+  background: var(--nav-bg, #0C2340);
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 160px;
+  pointer-events: none;
+  z-index: 100;
+  font-size: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.tt-symbol {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'SF Mono', monospace;
+  margin-bottom: 2px;
+}
+
+.tt-name {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.tt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 0;
+}
+
+.tt-label { opacity: 0.6; }
+
+.tt-val {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-hint {
+  margin-top: 8px;
+  font-size: 10px;
+  opacity: 0.5;
+  text-align: center;
+}
+
+.gain { color: var(--gain, #0F6E56); }
+.loss { color: var(--loss, #A32D2D); }
