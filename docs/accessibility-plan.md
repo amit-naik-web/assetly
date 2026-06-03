@@ -2,7 +2,7 @@
 
 Roadmap for finishing and maturing accessibility work after the initial Playwright + axe setup.
 
-**Related docs:** [accessibility-testing.md](./accessibility-testing.md) (what exists today) · [README.md](../README.md) (commands)
+**Related docs:** [accessibility-testing.md](./accessibility-testing.md) (automated setup) · [accessibility-manual-testing.md](./accessibility-manual-testing.md) (hand testing) · [README.md](../README.md) (commands)
 
 **Severity gate (all automated tests):** fail only on axe **critical** and **serious** violations.
 
@@ -134,6 +134,8 @@ Roadmap for finishing and maturing accessibility work after the initial Playwrig
 **Goal:** Cover what automation cannot detect.
 
 ### 4.1 Per-release manual checklist
+
+Full step-by-step guide: **[accessibility-manual-testing.md](./accessibility-manual-testing.md)** (per-route checklists, NVDA/VoiceOver, PR template).
 
 | Check | Description |
 |-------|-------------|

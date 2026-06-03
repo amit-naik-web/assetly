@@ -23,8 +23,6 @@ export interface TreemapNode {
     y1: number;
     width: number;
     height: number;
-    color: string;
-    textColor: string;
     portfolioPct: number;
     fontSize: number;
     fontWeight: number;
