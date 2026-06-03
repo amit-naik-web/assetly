@@ -48,24 +48,15 @@ export class Treemap implements AfterViewInit, OnDestroy {
     readonly hoverNode = signal<TreemapLeaf | null>(null);
     readonly announcement = signal('');
 
-    private fillColor(pct: number): string {
-        const light = this.theme() === 'light';
-        return d3.scaleLinear<string>()
-            .domain([-4, -1, -0.1, 0.1, 1, 4])
-            .range(light
-                ? ['#B71C1C', '#E53935', '#E0E0E0', '#43A047', '#2E7D32', '#1B5E20']
-                : ['#7A0000', '#C62828', '#1A1A1A', '#1B5E20', '#2E7D32', '#00600F'])
-            .clamp(true)(pct);
+    isNeutralPct(pct: number): boolean {
+        return Math.abs(pct) < 0.1;
     }
 
-    private labelColor(pct: number): string {
-        const light = this.theme() === 'light';
-        return d3.scaleLinear<string>()
-            .domain([-4, -1, 0, 1, 4])
-            .range(light
-                ? ['#FFCDD2', '#EF9A9A', '#616161', '#A5D6A7', '#C8E6C9']
-                : ['#FF8A80', '#FF5252', '#BDBDBD', '#69F0AE', '#B9F6CA'])
-            .clamp(true)(pct);
+    leafIntensity(pct: number): 'low' | 'mid' | 'high' {
+        const abs = Math.abs(pct);
+        if (abs >= 2) return 'high';
+        if (abs >= 0.5) return 'mid';
+        return 'low';
     }
 
     // Active (focused) leaf
@@ -204,8 +195,6 @@ export class Treemap implements AfterViewInit, OnDestroy {
                 y1: y0 + h,
                 width: w,
                 height: h,
-                color: this.fillColor(pct),
-                textColor: this.labelColor(pct),
                 portfolioPct,
                 labelLayout,
                 pctLabel,

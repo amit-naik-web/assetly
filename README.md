@@ -52,7 +52,7 @@ npm run test:a11y
 
 ## Accessibility testing (Playwright + axe)
 
-Full documentation: [docs/accessibility-testing.md](docs/accessibility-testing.md) (why, file map, how it works). Roadmap: [docs/accessibility-plan.md](docs/accessibility-plan.md).
+Docs: [automated testing](docs/accessibility-testing.md) · [manual testing](docs/accessibility-manual-testing.md) · [roadmap](docs/accessibility-plan.md)
 
 E2E accessibility scans use [Playwright](https://playwright.dev/) with [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright). Tests fail on **critical** and **serious** violations only.
 

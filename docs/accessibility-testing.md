@@ -2,7 +2,7 @@
 
 This document explains **why** automated accessibility testing was added, **where** each piece lives in the repo, and **how** to run and extend it.
 
-**Roadmap / next steps:** [accessibility-plan.md](./accessibility-plan.md)
+**Roadmap / next steps:** [accessibility-plan.md](./accessibility-plan.md) · **Manual testing:** [accessibility-manual-testing.md](./accessibility-manual-testing.md)
 
 ---
 

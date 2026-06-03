@@ -2,15 +2,22 @@
     position: relative;
     width: 100%;
     outline: none;
-    // border-radius: 8px;
     overflow: hidden;
     --treemap-separator: #5f5e5a;
     --treemap-bg: var(--treemap-separator);
     --treemap-header-bg: #0a0a0a;
     --treemap-border: rgba(255, 255, 255, 0.12);
-    --treemap-header-text: rgba(255, 255, 255, 0.55);
+    --treemap-header-text: rgba(255, 255, 255, 0.85);
     --treemap-focus-gain: var(--gain, #0F6E56);
     --treemap-focus-loss: var(--loss, #A32D2D);
+    --treemap-leaf-fg: #ffffff;
+    --treemap-leaf-neutral-bg: #3a3a3a;
+    --treemap-leaf-gain-low: color-mix(in srgb, var(--gain, #0F6E56) 42%, #1a1a1a);
+    --treemap-leaf-gain-mid: color-mix(in srgb, var(--gain, #0F6E56) 58%, #121212);
+    --treemap-leaf-gain-high: color-mix(in srgb, var(--gain, #0F6E56) 72%, #0a0a0a);
+    --treemap-leaf-loss-low: color-mix(in srgb, var(--loss, #A32D2D) 42%, #1a1a1a);
+    --treemap-leaf-loss-mid: color-mix(in srgb, var(--loss, #A32D2D) 58%, #121212);
+    --treemap-leaf-loss-high: color-mix(in srgb, var(--loss, #A32D2D) 72%, #0a0a0a);
     background: var(--treemap-bg);
 
     &.treemap--light {
@@ -19,6 +26,14 @@
       --treemap-header-bg: var(--surface, #F4F3EE);
       --treemap-border: var(--treemap-separator);
       --treemap-header-text: var(--text-secondary, #5F5E5A);
+      --treemap-leaf-fg: var(--text-primary, #2C2C2A);
+      --treemap-leaf-neutral-bg: var(--surface, #F4F3EE);
+      --treemap-leaf-gain-low: color-mix(in srgb, var(--gain, #0F6E56) 36%, #ffffff);
+      --treemap-leaf-gain-mid: color-mix(in srgb, var(--gain, #0F6E56) 52%, #ffffff);
+      --treemap-leaf-gain-high: color-mix(in srgb, var(--gain, #0F6E56) 68%, #ffffff);
+      --treemap-leaf-loss-low: color-mix(in srgb, var(--loss, #A32D2D) 36%, #ffffff);
+      --treemap-leaf-loss-mid: color-mix(in srgb, var(--loss, #A32D2D) 52%, #ffffff);
+      --treemap-leaf-loss-high: color-mix(in srgb, var(--loss, #A32D2D) 68%, #ffffff);
     }
   
     &:focus-visible {
@@ -51,15 +66,11 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgba(255, 255, 255, 0.80);
+    color: var(--treemap-header-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 16px;
-  
-    .treemap--light & {
-      color: rgba(0, 0, 0, 0.65);
-    }
   }
 
   .sector-frame {
@@ -70,7 +81,7 @@
     z-index: 1;
   }
   
-  /* Leaf block */
+  /* Leaf block — token fills + fixed foreground for WCAG contrast */
   .leaf {
     position: absolute;
     display: flex;
@@ -82,15 +93,33 @@
     overflow: hidden;
     border-radius: 2px;
     box-sizing: border-box;
+    color: var(--treemap-leaf-fg);
     transition: filter 0.12s;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     z-index: 1;
 
+    &.leaf-neutral {
+      background: var(--treemap-leaf-neutral-bg);
+    }
+
+    &.leaf-gain.leaf-intensity-low { background: var(--treemap-leaf-gain-low); }
+    &.leaf-gain.leaf-intensity-mid { background: var(--treemap-leaf-gain-mid); }
+    &.leaf-gain.leaf-intensity-high { background: var(--treemap-leaf-gain-high); }
+
+    &.leaf-loss.leaf-intensity-low { background: var(--treemap-leaf-loss-low); }
+    &.leaf-loss.leaf-intensity-mid { background: var(--treemap-leaf-loss-mid); }
+    &.leaf-loss.leaf-intensity-high { background: var(--treemap-leaf-loss-high); }
+
     &:hover,
     &.leaf-hovered {
-      filter: brightness(1.15);
+      filter: brightness(1.08);
       z-index: 3;
+    }
+
+    .treemap--light &:hover,
+    .treemap--light &.leaf-hovered {
+      filter: brightness(0.97);
     }
 
     &.leaf-focused {
@@ -242,5 +271,5 @@
     text-align: center;
   }
   
-  .gain { color: #5DCAA5; }
-  .loss { color: #F09595; }
+  .gain { color: var(--gain, #0F6E56); }
+  .loss { color: var(--loss, #A32D2D); }
