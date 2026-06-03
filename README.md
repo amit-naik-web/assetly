@@ -50,35 +50,30 @@ Component accessibility tests live in `*.a11y.spec.ts` files and use [axe-core](
 npm run test:a11y
 ```
 
-## Accessibility testing (Playwright + axe)
+Template accessibility rules run via ESLint on every `src/**/*.html` file (editor + CLI):
+
+```bash
+npm run lint
+```
+
+## Accessibility
 
 Docs: [automated testing](docs/accessibility-testing.md) · [manual testing](docs/accessibility-manual-testing.md) · [roadmap](docs/accessibility-plan.md)
 
-E2E accessibility scans use [Playwright](https://playwright.dev/) with [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright). Tests fail on **critical** and **serious** violations only.
+Three automated layers (all passing locally as of June 2026):
 
-Start the app (or let Playwright start it automatically):
+| Command | What it checks |
+|---------|----------------|
+| `npm run lint` | ESLint template accessibility on `src/**/*.html` |
+| `npm run test:a11y` | Six component `*.a11y.spec.ts` files (axe via Vitest) |
+| `npm run e2e:a11y` | Six routes in Chromium (axe via Playwright) |
 
-```bash
-npm start
-```
-
-Run route-level accessibility checks:
-
-```bash
-npm run e2e:a11y
-```
-
-Open the HTML report after a run:
+axe-based tests fail on **critical** and **serious** violations only.
 
 ```bash
-npm run a11y:report
-```
-
-Other Playwright commands:
-
-```bash
-npm run e2e       # all e2e tests
-npm run e2e:ui    # interactive UI mode
+npm run lint && npm run test:a11y && npm run e2e:a11y
+npm run a11y:report   # HTML report after E2E
+npm run e2e:ui        # Playwright UI mode
 ```
 
 ## Additional Resources

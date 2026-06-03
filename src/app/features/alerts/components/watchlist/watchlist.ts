@@ -6,7 +6,7 @@ import {
     inject,
   } from '@angular/core';
   import { NgClass } from '@angular/common';
-  import { WatchlistItem, MOCK_PRICES } from '../../models/alert.model';
+  import { WatchlistItem } from '../../models/alert.model';
   import { Router } from '@angular/router';
   
   @Component({

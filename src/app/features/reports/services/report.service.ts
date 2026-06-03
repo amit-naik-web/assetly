@@ -1,10 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { Observable, of, forkJoin } from 'rxjs';
 import {
-  Observable, of, forkJoin,
-  combineLatest, timer, BehaviorSubject,
-} from 'rxjs';
-import {
-  map, switchMap, scan,
+  map, scan,
   withLatestFrom, delay, shareReplay,
 } from 'rxjs/operators';
 import { PerformanceRow } from '../models/report.model';

@@ -155,7 +155,7 @@ export class PriceTable {
   // Updates the live region so screen readers announce price changes
   constructor() {
     effect(() => {
-      const map = this.prices();
+      this.prices();
       const latest = this.service.latestTick$.getValue();
       if (!latest) return;
 

@@ -12,7 +12,8 @@
     "e2e:a11y": "playwright test e2e/a11y",
     "e2e:ui": "playwright test --ui",
     "a11y:report": "playwright show-report",
-    "serve:ssr:assetly": "node dist/assetly/server/server.mjs"
+    "serve:ssr:assetly": "node dist/assetly/server/server.mjs",
+    "lint": "ng lint"
   },
   "private": true,
   "packageManager": "npm@10.9.2",
@@ -39,13 +40,17 @@
     "@angular/cli": "^21.2.12",
     "@angular/compiler-cli": "^21.2.0",
     "@axe-core/playwright": "^4.11.3",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "angular-eslint": "21.4.0",
     "axe-core": "^4.12.0",
+    "eslint": "^10.3.0",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
+    "typescript-eslint": "8.59.2",
     "vitest": "^4.0.8",
     "vitest-axe": "^0.1.0"
   }

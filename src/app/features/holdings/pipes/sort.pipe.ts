@@ -17,14 +17,10 @@ export class SortPipe implements PipeTransform {
     return [...rows].sort((a, b) => {
       const aVal = a[column];
       const bVal = b[column];
-
-      let comparison = 0;
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        comparison = aVal.localeCompare(bVal);
-      } else {
-        comparison = (aVal as number) - (bVal as number);
-      }
-
+      const comparison =
+        typeof aVal === 'string' && typeof bVal === 'string'
+          ? aVal.localeCompare(bVal)
+          : (aVal as number) - (bVal as number);
       return dir === 'asc' ? comparison : -comparison;
     });
   }

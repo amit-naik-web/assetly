@@ -9,7 +9,7 @@ import {
     ElementRef,
     HostListener,
     OnDestroy,
-    inject,
+    AfterViewInit,
   } from '@angular/core';
   import { NgClass } from '@angular/common';
   import * as d3 from 'd3';
@@ -23,7 +23,7 @@ import {
     templateUrl: './candlestick.html',
     styleUrl: './candlestick.scss',
   })
-  export class Candlestick implements OnDestroy {
+  export class Candlestick implements AfterViewInit, OnDestroy {
     candles  = input.required<OhlcvCandle[]>();
     symbol   = input.required<string>();
     viewMode = input<ChartViewMode>('candlestick');

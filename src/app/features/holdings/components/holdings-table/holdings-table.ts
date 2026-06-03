@@ -53,12 +53,10 @@ export class HoldingsTable {
     return [...rows].sort((a, b) => {
       const aVal = a[col];
       const bVal = b[col];
-      let cmp = 0;
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        cmp = aVal.localeCompare(bVal);
-      } else {
-        cmp = (aVal as number) - (bVal as number);
-      }
+      const cmp =
+        typeof aVal === 'string' && typeof bVal === 'string'
+          ? aVal.localeCompare(bVal)
+          : (aVal as number) - (bVal as number);
       return dir === 'asc' ? cmp : -cmp;
     });
   });
